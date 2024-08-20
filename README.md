@@ -30,8 +30,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/Stianein/CALARM_software">
-    <img src="Images/Colifast_50pix_medium.png" alt="Logo" width="100" height="10">
+  <a href="https://www.colifast.no/">
+    <img src="Images/Colifast_50pix_medium.png" alt="Logo" width="200" height="40">
   </a>
 
 <h3 align="center">Software for Colifast ALARM</h3>
@@ -85,7 +85,15 @@
 
 [![Software for Colifast ALARM][product-screenshot]](https://example.com)
 
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
+In this project I have developed software for the Colifast ALARM instrument. We sought to take more control of the whole of the equipement, which measures fecal indicator bacteria in water recipients, see our web page for more info on it´s usecases.
+
+Colifast is as of 2024 a low budget company, and open source is thus a reasonable strategy for our software. But sharing the source code may have som benefits to us too, it could help us navigate customer needs, and github can be a platform to handle future priorities of development. Aside from that maybe this project could work as a starting point for people who whish to develope software to communicate with the same or similar components used in the Colifast ALARM system. 
+
+Off course I would be more than happy to have people participate on the development, to make the equipement even better, despite it being a commercially sold equipment, should they wish to. The software can be opened fine on a windows computer without the components connected, but it has not yet been time to make modules that simulate the function of the components. 
+
+The equipment is not cross platform, as it utilizes components that are windows only components. 
+
+`github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -93,14 +101,17 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 
 ### Built With
 
-* [![Next][Next.js]][Next-url]
+* [![Python][Python.py][Python-url]
 * [![React][React.js]][React-url]
-* [![Vue][Vue.js]][Vue-url]
-* [![Angular][Angular.io]][Angular-url]
-* [![Svelte][Svelte.dev]][Svelte-url]
-* [![Laravel][Laravel.com]][Laravel-url]
-* [![Bootstrap][Bootstrap.com]][Bootstrap-url]
-* [![JQuery][JQuery.com]][JQuery-url]
+
+* ![Python](https://img.shields.io/badge/Python-3.11-blue.svg) [Python](https://www.python.org/) - Programming language used.
+* ![PyQt5](https://img.shields.io/badge/PyQt5-5.15.9-brightgreen.svg) [PyQt5](https://riverbankcomputing.com/software/pyqt/intro) - GUI framework for creating the application interface.
+* ![NumPy](https://img.shields.io/badge/NumPy-1.26.0-orange.svg) [NumPy](https://numpy.org/) - Numerical computations and array handling.
+* ![Matplotlib](https://img.shields.io/badge/Matplotlib-3.7.2-blue.svg) [Matplotlib](https://matplotlib.org/) - Plotting and data visualization.
+* ![Seabreeze](https://img.shields.io/badge/Seabreeze-2.8.0-yellow.svg) [Seabreeze](https://pypi.org/project/Seabreeze/) - Interface for Ocean Optics spectrometers.
+* ![Pandas](https://img.shields.io/badge/Pandas-1.3.3-yellowgreen.svg) [Pandas](https://pandas.pydata.org/) - Data manipulation and analysis.
+* ![Qt](https://img.shields.io/badge/Qt-5.15.8-green.svg) [Qt](https://www.qt.io/) - Cross-platform application framework.
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -239,11 +250,12 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 [license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
+
 [product-screenshot]: images/screenshot.png
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[React-url]: https://reactjs.org/
+[Python.py]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
+[Python-url]: https://www.python.org/
+[PyQt]: https://img.shields.io/badge/PyQt5-5.15.8-blue
+[PyQt-url]: https://riverbankcomputing.com/
 [Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
 [Vue-url]: https://vuejs.org/
 [Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
