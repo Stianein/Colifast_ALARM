@@ -39,14 +39,14 @@
   <p align="center">
     project_description
     <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/Stianein/Colifast_ALARM"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/github_username/repo_name">View Demo</a>
+    <a href="https://github.com/Stianein/Colifast_ALARM">View Demo</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/Stianein/Colifast_ALARM/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
-    <a href="https://github.com/github_username/repo_name/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/Stianein/Colifast_ALARM/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
@@ -93,7 +93,7 @@ Off course I would be more than happy to have people participate on the developm
 
 The equipment is not cross platform, as it utilizes components that are windows only components. 
 
-`github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
+`Stianein`, `Colifast_ALARM`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -101,16 +101,26 @@ The equipment is not cross platform, as it utilizes components that are windows 
 
 ### Built With
 
-* [![Python][Python.py][Python-url]
-* [![React][React.js]][React-url]
+* ![Python][Python.py][Python-url]
+* ![Anaconda](https://img.shields.io/badge/Environment-Anaconda-blue.svg)
+
 
 * ![Python](https://img.shields.io/badge/Python-3.11-blue.svg) [Python](https://www.python.org/) - Programming language used.
+* ![Anaconda](https://img.shields.io/badge/Environment-Anaconda-blue.svg) [Anaconda](https://www.anaconda.com/) - Python distribution and package management.
 * ![PyQt5](https://img.shields.io/badge/PyQt5-5.15.9-brightgreen.svg) [PyQt5](https://riverbankcomputing.com/software/pyqt/intro) - GUI framework for creating the application interface.
 * ![NumPy](https://img.shields.io/badge/NumPy-1.26.0-orange.svg) [NumPy](https://numpy.org/) - Numerical computations and array handling.
 * ![Matplotlib](https://img.shields.io/badge/Matplotlib-3.7.2-blue.svg) [Matplotlib](https://matplotlib.org/) - Plotting and data visualization.
 * ![Seabreeze](https://img.shields.io/badge/Seabreeze-2.8.0-yellow.svg) [Seabreeze](https://pypi.org/project/Seabreeze/) - Interface for Ocean Optics spectrometers.
-* ![Pandas](https://img.shields.io/badge/Pandas-1.3.3-yellowgreen.svg) [Pandas](https://pandas.pydata.org/) - Data manipulation and analysis.
+* ![PySerial](https://img.shields.io/badge/PySerial-3.5-yellowgreen.svg) [PySerial](https://pyserial.readthedocs.io/en/latest/) - Serial port communication library.
 * ![Qt](https://img.shields.io/badge/Qt-5.15.8-green.svg) [Qt](https://www.qt.io/) - Cross-platform application framework.
+* [Lexilla](https://github.com/ScintillaOrg/lexilla) - Lexilla is the library for syntax highlighting used by QScintilla.
+* ![QScintilla](https://img.shields.io/badge/QScintilla-2.14.1-blue.svg) [QScintilla](https://riverbankcomputing.com/software/qscintilla/intro) - A Qt port of the Scintilla C++ editor component.
+* [APScheduler](https://apscheduler.readthedocs.io/en/latest/) - Advanced Python Scheduler for scheduling tasks.
+
+- **Standard Libraries**:
+  * [Threading](https://docs.python.org/3/library/threading.html) - Python’s standard library for creating and managing threads.
+  * [Queue](https://docs.python.org/3/library/queue.html) - Standard library for thread-safe queues.
+  * [Futures](https://docs.python.org/3/library/concurrent.futures.html) - Standard library for asynchronously executing callables.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -120,37 +130,32 @@ The equipment is not cross platform, as it utilizes components that are windows 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+For installing the prerequisite packages and setting up an environment for running this software I suggest using Anaconda:
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+* Find the prerequisited packages in the environment.yml file
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
+Go to Anaconda's webpage to download https://www.anaconda.com/download
+
+1. Set up an environement using the provided environment.yml file.
+   ```sh
+   conda env create -f environment.yml
+   ```
 2. Clone the repo
    ```sh
-   git clone https://github.com/github_username/repo_name.git
+   git clone https://github.com/Stianein/Colifast_ALARM
    ```
-3. Install NPM packages
+3. Change git remote url to avoid accidental pushes to base project
    ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
-5. Change git remote url to avoid accidental pushes to base project
-   ```sh
-   git remote set-url origin github_username/repo_name
+   git remote set-url origin Stianein/Colifast_ALARM
    git remote -v # confirm the changes
    ```
+4. Set up the pyseabreeze drivers – by running the run_seabreeze_setup.bat file.
+
+5. Make sure to include the dll´s in the right folders. Pump and ADU – figure out how i did this myself.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -175,7 +180,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [ ] Feature 3
     - [ ] Nested Feature
 
-See the [open issues](https://github.com/github_username/repo_name/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/Stianein/Colifast_ALARM/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -199,8 +204,8 @@ Don't forget to give the project a star! Thanks again!
 
 ### Top contributors:
 
-<a href="https://github.com/github_username/repo_name/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=github_username/repo_name" alt="contrib.rocks image" />
+<a href="https://github.com/Stianein/Colifast_ALARM/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Stianein/Colifast_ALARM" alt="contrib.rocks image" />
 </a>
 
 
@@ -208,7 +213,7 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the GPL License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -219,7 +224,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
 
-Project Link: [https://github.com/github_username/repo_name](https://github.com/github_username/repo_name)
+Project Link: [https://github.com/Stianein/Colifast_ALARM](https://github.com/Stianein/Colifast_ALARM)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -238,16 +243,16 @@ Project Link: [https://github.com/github_username/repo_name](https://github.com/
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/repo_name/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/Stianein/Colifast_ALARM.svg?style=for-the-badge
+[contributors-url]: https://github.com/Stianein/Colifast_ALARM/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/Stianein/Colifast_ALARM.svg?style=for-the-badge
+[forks-url]: https://github.com/Stianein/Colifast_ALARM/network/members
+[stars-shield]: https://img.shields.io/github/stars/Stianein/Colifast_ALARM.svg?style=for-the-badge
+[stars-url]: https://github.com/Stianein/Colifast_ALARM/stargazers
+[issues-shield]: https://img.shields.io/github/issues/Stianein/Colifast_ALARM.svg?style=for-the-badge
+[issues-url]: https://github.com/Stianein/Colifast_ALARM/issues
+[license-shield]: https://img.shields.io/github/license/Stianein/Colifast_ALARM.svg?style=for-the-badge
+[license-url]: https://github.com/Stianein/Colifast_ALARM/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
 
