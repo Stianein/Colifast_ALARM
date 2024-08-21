@@ -31,7 +31,7 @@
 <br />
 <div align="center">
   <a href="https://www.colifast.no/">
-    <img src="Images/Colifast_50pix_medium.png" alt="Logo" width="200" height="40">
+    <img src="Images/Colifast_50pix_medium.png" alt="Logo" width="200" height="35">
   </a>
 
 <h3 align="center">Software for Colifast ALARM</h3>
