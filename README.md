@@ -22,8 +22,8 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+[![GPL License][license-shield]][license-url]
+[![LinkedIn][linkedin-shield]][[Colifast-linkedin]]
 
 
 
@@ -101,10 +101,6 @@ The equipment is not cross platform, as it utilizes components that are windows 
 
 ### Built With
 
-* ![Python][Python.py][Python-url]
-* ![Anaconda](https://img.shields.io/badge/Environment-Anaconda-blue.svg)
-
-
 * ![Python](https://img.shields.io/badge/Python-3.11-blue.svg) [Python](https://www.python.org/) - Programming language used.
 * ![Anaconda](https://img.shields.io/badge/Environment-Anaconda-blue.svg) [Anaconda](https://www.anaconda.com/) - Python distribution and package management.
 * ![PyQt5](https://img.shields.io/badge/PyQt5-5.15.9-brightgreen.svg) [PyQt5](https://riverbankcomputing.com/software/pyqt/intro) - GUI framework for creating the application interface.
@@ -113,15 +109,14 @@ The equipment is not cross platform, as it utilizes components that are windows 
 * ![Seabreeze](https://img.shields.io/badge/Seabreeze-2.8.0-yellow.svg) [Seabreeze](https://pypi.org/project/Seabreeze/) - Interface for Ocean Optics spectrometers.
 * ![PySerial](https://img.shields.io/badge/PySerial-3.5-yellowgreen.svg) [PySerial](https://pyserial.readthedocs.io/en/latest/) - Serial port communication library.
 * ![Qt](https://img.shields.io/badge/Qt-5.15.8-green.svg) [Qt](https://www.qt.io/) - Cross-platform application framework.
-* [Lexilla](https://github.com/ScintillaOrg/lexilla) - Lexilla is the library for syntax highlighting used by QScintilla.
+* [Lexilla](https://github.com/ScintillaOrg/lexilla) - Library for syntax highlighting, used by QScintilla.
 * ![QScintilla](https://img.shields.io/badge/QScintilla-2.14.1-blue.svg) [QScintilla](https://riverbankcomputing.com/software/qscintilla/intro) - A Qt port of the Scintilla C++ editor component.
 * [APScheduler](https://apscheduler.readthedocs.io/en/latest/) - Advanced Python Scheduler for scheduling tasks.
 
-- **Standard Libraries**:
+ **Standard Libraries**:
   * [Threading](https://docs.python.org/3/library/threading.html) - Python’s standard library for creating and managing threads.
   * [Queue](https://docs.python.org/3/library/queue.html) - Standard library for thread-safe queues.
   * [Futures](https://docs.python.org/3/library/concurrent.futures.html) - Standard library for asynchronously executing callables.
-
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -164,9 +159,8 @@ Go to Anaconda's webpage to download https://www.anaconda.com/download
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
+Include some info from manual here...
+Documentation page link?
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -175,10 +169,6 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
 
 See the [open issues](https://github.com/Stianein/Colifast_ALARM/issues) for a full list of proposed features (and known issues).
 
@@ -222,7 +212,9 @@ Distributed under the GPL License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
+Stian Ingebrigtsen - si@colifast.no
+
+[![Colifast home page][Colifast]]
 
 Project Link: [https://github.com/Stianein/Colifast_ALARM](https://github.com/Stianein/Colifast_ALARM)
 
@@ -233,12 +225,34 @@ Project Link: [https://github.com/Stianein/Colifast_ALARM](https://github.com/St
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* []()
-* []()
-* []()
+* This project started as a bachelor project for students at the University of Oslo a special thanks to Julie Knapstad, Jon Sebastian Kaupang and Are Pettersen for their contributions.
+* This Readme was made using [![this][readme-template]] readme template, by [![othneildrew][readme-creator]].
+* Lexilla
+
+
+License for Lexilla, Scintilla, and SciTE
+
+Copyright 1998-2021 by Neil Hodgson <neilh@scintilla.org>
+
+All Rights Reserved
+
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
+provided that the above copyright notice appear in all copies and that
+both that copyright notice and this permission notice appear in
+supporting documentation.
+
+NEIL HODGSON DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS, IN NO EVENT SHALL NEIL HODGSON BE LIABLE FOR ANY
+SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
+OR PERFORMANCE OF THIS SOFTWARE.
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
@@ -256,20 +270,11 @@ Project Link: [https://github.com/Stianein/Colifast_ALARM](https://github.com/St
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
 
-[product-screenshot]: images/screenshot.png
-[Python.py]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
-[Python-url]: https://www.python.org/
-[PyQt]: https://img.shields.io/badge/PyQt5-5.15.8-blue
-[PyQt-url]: https://riverbankcomputing.com/
-[Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
-[Vue-url]: https://vuejs.org/
-[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
-[Angular-url]: https://angular.io/
-[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
-[Svelte-url]: https://svelte.dev/
-[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
-[Laravel-url]: https://laravel.com
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
+[readme-template]: https://github.com/othneildrew/Best-README-Template/blob/main/BLANK_README.md
+[readme-creator]: https://github.com/othneildrew/
+
+[Colifast]: https://www.colifast.no
+[Colifast-linkedin]: https://www.linkedin.com/company/colifast
+
+
+[Documentation]: link_here

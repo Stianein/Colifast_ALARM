@@ -1,0 +1,107 @@
+*{
+    border: none;
+    background-color: transparent;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    color: PLACEHOLDER_TEXT_COLOR;  /* Text color set to white in dark mode */
+    font: 75 10pt "Calibri";
+    border-radius: 4px;
+}
+
+
+#frame, #frame_1, #frame_2, #frame_3, #frame_4, #frame_5, #frame_6, #status_browser, #status_layout {
+    background-color: transparent;
+    background: transparent;
+}
+/* The Main Dark background color */
+QComboBox:hover,
+QPushButton:hover,
+#centralwidget, #acceptBottleSize, QInputDialog, #tabWidget {
+    background-color: PLACEHOLDER_BACKGROUND_COLOR; /* Dark background color */
+}
+/* The Slightly darker color that indicate a click of a button*/
+QPushButton:pressed {
+    background-color: PLACEHOLDER_DARKER_PRESS_BUTTON_COLOR; /* Darker pressed color for buttons */
+}
+
+/* The Lighter frame color background color */
+QMenu::item:selected,
+QPushButton,
+#leftSubContainer, #moreOptions, #historyCalendar, #headerContainer, #runMethod {
+    background-color: PLACEHOLDER_FOREGROUND_COLOR; /* Darker shades of grey for containers */
+}
+#remainingSamples, #status_browser, #dataFrame, #mediumSamples {
+    border: 2px solid PLACEHOLDER_TEXT_COLOR; /* Darker border color for these elements */
+    border-radius: 5px;
+    background-color: transparent;
+    line-height: 6;
+}
+#status_browser{
+    line-height: 2;
+}
+
+/* The tooltip and progress bar color - meant to create a contrast */
+QComboBox QAbstractItemView {
+    background-color: PLACEHOLDER_BACKGROUND_COLOR;
+    color: PLACEHOLDER_TEXT_COLOR;
+    selection-background-color: PLACEHOLDER_CONTRAST_COLOR;
+}
+QProgressBar::chunk,
+QToolTip {
+    background-color: PLACEHOLDER_CONTRAST_COLOR; /* A contrasting color for progress bars */
+    border-radius: 3px;
+    color: PLACEHOLDER_TEXT_COLOR;
+}
+
+
+/* Non-color design */
+#leftContainer, #QPushButton{
+    text-align: left;
+    padding: 2px, 10px;
+}
+QMenu::item:selected, QComboBox::item:selected {
+    color: PLACEHOLDER_TEXT_COLOR;
+}
+QPushButton {
+    border: none;
+    padding: 10px;
+    color: PLACEHOLDER_TEXT_COLOR;
+    border-radius: 5px;
+}
+
+/* Styles specific to custom context menus */
+#customContextMenu {
+    background-color: PLACEHOLDER_CONTRAST_COLOR;  /* Background color */
+    color: PLACEHOLDER_TEXT_COLOR;              /* Text color */
+    border: 1px solid PLACEHOLDER_TEXT_COLOR;   /* Border color */
+}
+
+#customContextMenu::item:selected {  /* Style for selected items */
+    background-color: PLACEHOLDER_BACKGROUND_COLOR; /* Background color when selected */
+    color: PLACEHOLDER_TEXT_COLOR;                /* Text color when selected */
+}
+
+QPushButton#classic_style,
+QPushButton#dark_mode,
+QPushButton#colorfull {
+    border: 2px solid grey;
+    border-color: #616161;
+    border-radius: 4px;
+    width: 5px; /* Adjust the width */
+    height: 5px; /* Adjust the height */
+}
+
+
+
+/* Styling buttons */
+QPushButton#classic_style {
+    background-color: #d4d4d4;
+}
+QPushButton#dark_mode {
+    background-color: #2d2d2d;
+}
+QPushButton#colorfull {
+    background-color: PLACEHOLDER_COLORFULL_COLOR;
+}
+

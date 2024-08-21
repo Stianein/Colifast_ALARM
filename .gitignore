@@ -1,0 +1,7 @@
+.pyc
+/__pycache__
+/.vs
+.txt
+/Logs/*
+/dist
+/build
