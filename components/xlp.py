@@ -17,7 +17,7 @@ total_steps = 3000
 # Function for sending commands to pump (Tecan cavro's DT protocol - OEM protocol commands never seemed to work for me)
 def send_command(command):
     global ser
-    # Check for user stop of program and abort run if True
+    # Check for user stop from GUI to abort the current run, if true
     if settings.getstopSignal():
         raise SystemExit("Stoping program")
     # Command block wrapper and encoding
@@ -112,7 +112,7 @@ def delay_until_done():
 
 # Function for checking if pump is active - Delays the pump until previous task is done
 def _check_pump_status(ser):
-    # Check for user stop signal
+    # Check for user stop from GUI to abort the current run, if true.
     if settings.getstopSignal():
         raise SystemExit("Stoping program now")
     busy = True

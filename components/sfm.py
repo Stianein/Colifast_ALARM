@@ -1,4 +1,4 @@
-# Module to communicate with spectrometer - SpectroFotoMeter
+# Module to communicate with spectrometer - SpectroFotoMeter, SFM
 # Author: Stian Ingebrigtsen
 
 import seabreeze
@@ -7,21 +7,24 @@ import seabreeze.spectrometers as sb
 import settings
 # from threading import Lock
 import sys
-sys.path.append("..\ALARM_programmvare")
 import numpy as np
 import time
 import datetime
 import logging
 
+# Fetch the current file's directory and get the parent added to sys.path
+current_file_directory = os.path.dirname(os.path.abspath(__file__))
+parent_directory = os.path.join(current_file_directory, "..")
+sys.path.append(parent_directory)
 
-# Function to get connected devices as list - populate dropdown in case of more than one spectrometer.
+# Logging errors to logfile
+log = logging.getLogger("method_logger")
+
+# Function to get connected devices as list - to populate dropdown in case of more than one spectrometer.
 def get_connected_devices():
 	global list
 	list = sb.list_devices()
 	return list
-
-# Logging errors to logfile
-log = logging.getLogger("method_logger")
 
 # Function to set the integration time of the spectrophotometer
 def set_integration_time():
@@ -31,7 +34,7 @@ def set_integration_time():
 		micro_seconds = settings.getIntegrationTime() * 1000 # convert micro to milliseconds seconds for the seabreeze lib
 		spec.integration_time_micros(int(micro_seconds))	
 	except:
-		raise RuntimeError("Could not close spectrophotometer")
+		raise RuntimeError("Could not set the integration time")
 
 # Initialize device - argument serial number, or first available device
 def initialize(serial_number=None):
@@ -65,10 +68,11 @@ def initialize(serial_number=None):
 def request_spectra():
 	global spec
 	try:
-		# check for user stop
+		# Check for user stop from GUI to abort the current run, if true
 		if settings.getstopSignal():
 			raise SystemExit("Stoping program")
-		# USB 4000 spectrometers - the old colifast spectrometers - are not supporting nonlinearity correction - so try with correction first
+		# USB 4000 spectrometers - the old colifast spectrometers - are not supporting nonlinearity correction 
+		# - so try with correction first in case of old spectrometer
 		try:
 			data = spec.intensities(correct_nonlinearity=True, correct_dark_counts=True)
 		except:
@@ -90,7 +94,6 @@ def get_wavelength_mapping():
 	global spec
 	try:
 		mapping = spec.wavelengths()
-		#print(mapping)
 		return mapping
 	except:
 		raise RuntimeError("Could not get wavelength mapping from spectrophotometer")

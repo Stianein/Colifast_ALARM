@@ -55,7 +55,7 @@ def liquid(position):
     else:
         pass
 
-    # Check for user stop signal, abort if true
+    # Check for user stop from GUI to abort the current run, if true
     if settings.getstopSignal():
         raise SystemExit("Stoping program mpv")
 

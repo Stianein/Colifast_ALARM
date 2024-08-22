@@ -40,15 +40,19 @@ log = logging.getLogger("method_logger")
 # Singleton class for limiting access to the adu device to a single entry point
 class ADUCommunication:
     _instance = None
-    _lock = threading.Lock()
+    _lock = threading.RLock()
     # SINGLETON function
     def __new__(cls, *args, **kwargs):
+        log.info("\t\tAttempting to create or retrieve singleton instance")
         if not cls._instance:
+            log.info("\t\tNo instance found, attempting to create one")
             with cls._lock:
                 if not cls._instance:
+                    log.info("\t\tCreating new instance of ADUCommunication")
                     cls._instance = super(ADUCommunication, cls).__new__(cls, *args, **kwargs)
                     cls._instance._initialize_connection()
                     cls._instance._initialize_queue()
+        log.info("\t\tReturning singleton instance of ADUCommunication"
         return cls._instance
     
     # Queue initialization handled in seperate thread
@@ -66,25 +70,32 @@ class ADUCommunication:
     
     # Initialization of device
     def _initialize_connection(self):
-        PRODUCT_ID = 208
-        global device_handle
-        device_handle = aduhid.open_device_by_product_id(PRODUCT_ID, 100)
+        log.info("\t\tInitializing connection to ADU")
+        with self._lock:
+            log.info("\t\tLock acquired for initializing connection")
+            PRODUCT_ID = 208
+            global device_handle
+            device_handle = aduhid.open_device_by_product_id(PRODUCT_ID, 100)
 
-        if device_handle is None:
-            log.error('Error opening the ADU. Ensure that it is connected with the green light')
-            self.initialized = False
-        else:
-            log.info("Device found and connected")
-            self.initialized = True
+            if device_handle is None:
+                log.error('Error opening the ADU. Ensure that it is connected with the green light')
+                self.initialized = False
+            else:
+                log.info("Device found and connected")
+                self.initialized = True
+            log.info(f"\t\tConnection {'initialized' if self.initialized else 'failed to initialize'}")
+
 
     # Function for handling the queue
     def _process_queue(self):
         while True:
-            print("Waiting for task...")
+            log.info("\t\tWaiting for task in queue")
             item = self.queue.get()
-            # print(f"Dequeued item: {item}")
+            log.info(f"\t\tDequeued item: {item}")
             if item is None:
+                log.info("\t\tExiting queue processing")
                 break
+            log.info(f"\t\tProcessing task: {item[0]}")
             if isinstance(item, tuple) and len(item) == 2:
                 task, future = item
                 try:
@@ -96,27 +107,35 @@ class ADUCommunication:
                     print(f"Task failed with exception: {e}")
             else:
                 log.info(f"ADU Queue process, unexpected item structure: {item}")
+            log.info("\t\tTask processed successfully")
 
     # Function for handling queue of commands comming in for the device from different threads
     def _enqueue_command(self, function, *args, **kwargs):
-        # print(f"Enqueuing command: {function.__name__}, args: {args}, kwargs: {kwargs}")
+        log.info(f"\t\tEnqueuing command: {function.__name__}, args: {args}, kwargs: {kwargs}")
         future = Future()
         self.queue.put((lambda: function(*args, **kwargs), future))
+        log.info(f"\t\tCommand enqueued: {function.__name__}")
         return future
     
     # Validate connection - this is only controlled by a variable, self.initialized, 
     # which has nothing to do with the actual connection, so I am a bit unsure of the usfullness of this.
     def _validate_connection(self):
-        if not self.initialized:
-            self._initialize_connection()
-        return self.initialized
+        log.info("\t\tValidating ADU connection")
+        with self._lock:  # Ensure connection validation is thread-safe
+            log.info("\t\tLock acquired for validating connection")
+            if not self.initialized:
+                log.info("\t\tConnection not initialized, attempting to initialize")
+                self._initialize_connection()
+            return self.initialized
 
     # Functions for reading the adu device
     def read(self, command):
         future = self._enqueue_command(self._read, command)
         return future.result()
     def _read(self, command):
+        log.info("\t\tThread attempting to acquire lock in _read")
         with self._lock:
+            log.info("\t\tLock acquired in _read")
             if not self._validate_connection():
                 return "Could not validate connection, please load ADU"
             if settings.getstopSignal():
@@ -138,6 +157,7 @@ class ADUCommunication:
                 error_message = self._get_last_error_message()
                 log.error(f"Unsuccessful read, command {command} " + error_message)
                 return error_message
+            log.info("\t\tReleasing lock in _read")
 
     # Functions for writing to the adu device
     def write(self, command):
