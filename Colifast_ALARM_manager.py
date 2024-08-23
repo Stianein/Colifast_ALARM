@@ -2677,9 +2677,7 @@ class TimeSelectorDialog(QDialog):
     # Function for extracting the start time
     def get_chosen_time(self):
         if self.exec_() == QDialog.Accepted:
-            hour, minutes = self.time_selector.return_chosen_time()
-            time = datetime.datetime.now().replace(hour=hour, minute=minutes, second=0, microsecond=0)
-            return time
+            return self.time_selector.return_chosen_time()
         else:
             return None
 
