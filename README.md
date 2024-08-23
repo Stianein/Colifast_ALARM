@@ -23,7 +23,7 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![GPL License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][[Colifast-linkedin]]
+[![LinkedIn][linkedin-shield]][Colifast-linkedin]
 
 
 
@@ -31,7 +31,7 @@
 <br />
 <div align="center">
   <a href="https://www.colifast.no/">
-    <img src="Images/Colifast_50pix_medium.png" alt="Logo" width="200" height="35">
+    <img src="Images/Colifast_50pix.png" alt="Logo" width="200" height="30">
   </a>
 
 <h3 align="center">Software for Colifast ALARM</h3>

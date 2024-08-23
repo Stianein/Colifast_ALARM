@@ -4,7 +4,7 @@ from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 import os
 
 # Define paths
-path_to_program = "C:\\Users\\Colifast\\source\\repos\\Stianein\\ALARM_programmvare\\"
+path_to_program = os.path.abspath(".")
 path_to_libraries = "C:\\Users\\Colifast\\anaconda3\\envs\\colifast\\"
 
 a = Analysis(

@@ -1618,7 +1618,6 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         self.setStatus("")
         self.setStatus("")
         if remote_start:
-            self.setStatus("Awaiting remote start...")
             self.delayStartTime.setChecked(0)
             settings.storeDelayStart(0)
 
@@ -1627,14 +1626,13 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 no_adu = ErrorDialog("The ADU is not connected, so remote signal is not accesible.")
                 accept = no_adu.exec_()
                 if accept:
-                    self.mobileRemoteToggle.start()
                     self.remoteStart.setChecked(0)
                     settings.storeRemoteStart(0)
-                    self.setStatus("")
-                    self.setStatus("")  
                     return False
             # Start the remote GSM listner
             self.mobileRemoteToggle.start()
+            self.setStatus("Awaiting remote start...")
+
         else:
             try:
                 # Stop the remote GSM listner

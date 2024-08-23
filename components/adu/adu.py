@@ -52,7 +52,7 @@ class ADUCommunication:
                     cls._instance = super(ADUCommunication, cls).__new__(cls, *args, **kwargs)
                     cls._instance._initialize_connection()
                     cls._instance._initialize_queue()
-        log.info("\t\tReturning singleton instance of ADUCommunication"
+        log.info("\t\tReturning singleton instance of ADUCommunication")
         return cls._instance
     
     # Queue initialization handled in seperate thread
