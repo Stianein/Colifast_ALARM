@@ -214,7 +214,7 @@ Distributed under the GPL License. See `LICENSE.txt` for more information.
 
 Stian Ingebrigtsen - si@colifast.no
 
-[![Colifast home page][Colifast]]
+[![Colifast home page]][Colifast]
 
 Project Link: [https://github.com/Stianein/Colifast_ALARM](https://github.com/Stianein/Colifast_ALARM)
 
