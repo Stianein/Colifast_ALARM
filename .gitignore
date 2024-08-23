@@ -5,3 +5,6 @@
 /Logs/*
 /dist
 /build
+/source
+make*
+Makefile*
