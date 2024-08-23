@@ -95,7 +95,6 @@ class ADUadv(QWidget, ADU_window):
         self.self_adu_button.clicked.connect(self.selfTestADU)
         self.adu_load.clicked.connect(self.load_adu)
         self.reset_btn.clicked.connect(self.reset)
-        self.manual_command.clicked.connect(self.man_command)
         self.please_load = True
 
         # Create button variables for the adu channels

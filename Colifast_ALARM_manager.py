@@ -2196,6 +2196,9 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         # Add the scatter plot item to the plot widget
         graph_widget.addItem(scatter)
 
+        # Switch tab to plot tab to display the plotted graph
+        self.backBtn.click()
+
     # PLOT THRESHOLD LINE
     def threshold_infinite_line(self, threshold, widget):
         pen=pg.mkPen(color=QColor(self.contrast))
@@ -2961,12 +2964,18 @@ class SFMadv(QWidget, spectrometer_window):
         except:
             pass
 
-        self.turb_value.setText("")
-        self.flur_value.setText("")
         # Button click actions
         self.calib_btn.clicked.connect(self.calibrate)
         self.graph_btn.clicked.connect(self.graphButton)
         self.refreshDeviceList.clicked.connect(self.update_device_list)
+        self.UVLED.clicked.connect(self.UV_LED)
+        self.IRLED.clicked.connect(self.IR_LED)
+
+    # Spectrometer interface for turning on the LEDs - for a simple service controll of the spectrophotometer.
+    def UV_LED(self):
+        self.main.aduWindow.K3_btn.click()
+    def IR_LED(self):
+        self.main.aduWindow.K4_btn.click()
 
     def update_device_list(self):
         self.oceanOpticsDevices.clear()

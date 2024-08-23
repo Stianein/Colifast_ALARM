@@ -922,7 +922,7 @@ QPushButton {
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_8">
                  <property name="leftMargin">
-                  <number>10</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
                   <number>2</number>
@@ -934,34 +934,9 @@ QPushButton {
                   <number>2</number>
                  </property>
                  <item>
-                  <widget class="QTextBrowser" name="flur_value">
-                   <property name="maximumSize">
-                    <size>
-                     <width>50</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="inputMethodHints">
-                    <set>Qt::ImhNone</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label_13">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>18</height>
-                    </size>
-                   </property>
+                  <widget class="QPushButton" name="UVLED">
                    <property name="text">
-                    <string>Value</string>
+                    <string>UV-LED</string>
                    </property>
                   </widget>
                  </item>
@@ -1202,7 +1177,7 @@ QPushButton {
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_6">
                  <property name="leftMargin">
-                  <number>10</number>
+                  <number>2</number>
                  </property>
                  <property name="topMargin">
                   <number>2</number>
@@ -1214,34 +1189,9 @@ QPushButton {
                   <number>2</number>
                  </property>
                  <item>
-                  <widget class="QTextBrowser" name="turb_value">
-                   <property name="maximumSize">
-                    <size>
-                     <width>50</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="inputMethodHints">
-                    <set>Qt::ImhNone</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label_10">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>18</height>
-                    </size>
-                   </property>
+                  <widget class="QPushButton" name="IRLED">
                    <property name="text">
-                    <string>Value</string>
+                    <string>IR-LED</string>
                    </property>
                   </widget>
                  </item>

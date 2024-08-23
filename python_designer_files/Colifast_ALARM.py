@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Qt_files\Colifast_ALARM.ui'
+# Form implementation generated from reading ui file 'Colifast_ALARM.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -15,7 +15,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setEnabled(True)
-        MainWindow.resize(1493, 1631)
+        MainWindow.resize(924, 1345)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -1142,9 +1142,9 @@ class Ui_MainWindow(object):
         self.bact_box.setItemText(2, _translate("MainWindow", "Fecal Coliforms - 44 °C"))
         self.label_3.setText(_translate("MainWindow", "frequency"))
         self.freq_box.setItemText(0, _translate("MainWindow", "Continuous"))
-        self.freq_box.setItemText(1, _translate("MainWindow", "24 hour cycles"))
-        self.freq_box.setItemText(2, _translate("MainWindow", "48 hour cycles"))
-        self.freq_box.setItemText(3, _translate("MainWindow", "Manual"))
+        self.freq_box.setItemText(1, _translate("MainWindow", "24 hours cycle"))
+        self.freq_box.setItemText(2, _translate("MainWindow", "48 hours cycle"))
+        self.freq_box.setItemText(3, _translate("MainWindow", "Custom interval (in days)"))
         self.label_4.setText(_translate("MainWindow", "Hide"))
         self.sodiumThio.setText(_translate("MainWindow", "Sodium thiosulfat"))
         self.externalSample.setText(_translate("MainWindow", "External sample"))

@@ -83,8 +83,6 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Software for Colifast ALARM][product-screenshot]](https://example.com)
-
 In this project I have developed software for the Colifast ALARM instrument. We sought to take more control of the whole of the equipement, which measures fecal indicator bacteria in water recipients, see our web page for more info on it´s usecases.
 
 Colifast is as of 2024 a low budget company, and open source is thus a reasonable strategy for our software. But sharing the source code may have som benefits to us too, it could help us navigate customer needs, and github can be a platform to handle future priorities of development. Aside from that maybe this project could work as a starting point for people who whish to develope software to communicate with the same or similar components used in the Colifast ALARM system. 
