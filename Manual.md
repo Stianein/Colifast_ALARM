@@ -12,6 +12,14 @@ th, td {
 th {
     background-color: #f4f4f4;
 }
+.enlargeable {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.enlargeable:hover {
+  transform: scale(2); /* Adjust the scale as needed */
+}
 </style>
 
 # Colifast ALARM Instrument Manual
@@ -49,7 +57,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 2. **Method Selection:**
 
-    <img src="Images\method_selection.png" alt="Instrument Diagram" style="float: right; margin-left: 15px;">
+    <img src="Images\method_selection.png" alt="Instrument Diagram" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
 
    - Navigate to the **Method** section.
    - From the **Method File** drop-down menu, select the file you want the program to run.
@@ -61,7 +69,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
      - Custom interval (in days)
 
     - **Additional Options**
-        <br>
+        <br>    
         <table>
         <thead>
         <tr>
@@ -97,6 +105,9 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 ## History
 
+<img src="Images\history.png" alt="Instrument Diagram" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
+
+
 - In the **History** menu, you can plot historical data based on date. 
 - **How to Use:**
   - Click on the date you wish to plot. Dates with sample data are highlighted in white. 
@@ -121,13 +132,18 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 ## ADU
 
+<img src="Images\ADU_adv.png" alt="Instrument Diagram" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
+
 - This page allows the user to manually turn on/off the relays of the **ADU208** relay unit. 
     - There is an *ADU Load* button for initializing and updating the ports of the ADU. 
     - There is a *Reset* button for turning all the relays off.
     - A *Status field* shows the status of the ADU (connected or not).
     - The *Test* button runs read and write calls to all the ports of the device
-
+<br>
+<br>
 ## Spectrometer
+
+<img src="Images\spectrometer.png" alt="Instrument Diagram" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
 
 - This page allow the user to load available spectrometers, and run some service tasks related to the spectrometer
     #### Calibrate
