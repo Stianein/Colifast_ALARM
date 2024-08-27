@@ -1,6 +1,10 @@
 ﻿## MANAGER FILE FOR Colifast ALARM GUI ##
 # Author: Stian Eide Ingebrigtsen
 
+""" Colifast ALARM MANAGER 
+Displays the full Colifast ALARM GUI. It contains or call the component interfaces, found in python designer files folder. It Calls the 
+"""
+
 from python_designer_files.Colifast_ALARM import Ui_MainWindow
 
 # PyQt related
@@ -54,6 +58,7 @@ from python_designer_files.Error_message_dialog import Ui_Dialog as Ui_ErrorDial
 import python_designer_files.clock_time_picker as time_pckr
 import python_designer_files.editor as editor
 
+import markdown
 
 # Get the directory of the current file
 current_file_directory = os.path.dirname(os.path.abspath(__file__))
@@ -332,10 +337,12 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
         # Show the right page for the right menu chosen in advanced menu
         self.backBtn.clicked.connect(lambda: self.advmenu_button_click(0))
+        self.manualBtn.clicked.connect(lambda: self.advmenu_button_click(1))
         self.aduBtn.clicked.connect(lambda: self.advmenu_button_click(1))#lambda: self.stackedWidget.setCurrentIndex(1))
         self.sfmBtn.clicked.connect(lambda: self.advmenu_button_click(2))
         self.liquidBtn.clicked.connect(lambda: self.advmenu_button_click(3))
         self.txteditorBtn.clicked.connect(lambda: self.advmenu_button_click(4))
+        
 
         ## Start/stop Buttons ##
         self.startNewMethod.clicked.connect(self.toggle_worker)
@@ -363,6 +370,62 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
         # set the size of the window  on opening
         self.resize(800, 600)
+
+        from markdown_it import MarkdownIt
+        
+
+        # Initialize the MarkdownIt parser
+        self.md = MarkdownIt()
+
+         # Create a QTextBrowser to display the HTML content
+        self.text_browser = self.manualBrowser
+        # Load and display the Markdown content
+        self.load_markdown("manual.md")
+
+    def load_markdown(self, markdown_path):
+        # Convert Markdown to HTML
+        with open(markdown_path, "r") as file:
+            md_content = file.read()
+        html_content = self.md.render(md_content)
+
+        # Load the HTML into QTextBrowser
+        self.text_browser.setHtml(html_content)
+
+        # Apply a stylesheet
+        self.apply_stylesheet()
+
+    def apply_stylesheet(self):
+        # Path to your stylesheet
+        stylesheet_path = os.path.join(os.path.dirname(__file__), 'Styles/style.css')
+        
+        # Check if stylesheet exists
+        if os.path.exists(stylesheet_path):
+            with open(stylesheet_path, 'r') as file:
+                stylesheet = file.read()
+            self.text_browser.setStyleSheet(stylesheet)
+        else:
+            print(f"Stylesheet not found: {stylesheet_path}")
+
+
+        # # Load Markdown file and convert to HTML
+        # with open("manual.md", "r") as file:
+        #     md_content = file.read()
+
+        # html_content = markdown.markdown(md_content)
+
+        # # Link the external CSS stylesheet
+        # relative_stylesheet_path = os.path.join("styles", "stylesheet.css")
+
+        # stylesheet_link = f"""
+        # <link rel="stylesheet" type="text/css" href="{relative_stylesheet_path}">
+        # """
+
+        # # Embed the stylesheet link into the HTML content
+        # html_with_css = f"<html><head>{stylesheet_link}</head><body>{html_content}</body></html>"
+
+        # # Create a QTextBrowser to display the HTML content
+        # text_browser = self.manualBrowser
+        # text_browser.setHtml(html_with_css)
 
 
     ### Method Start/Stop functions ###
@@ -496,6 +559,13 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
     ## Scheduler preset functions ##
     def sample_scheduler(self, samples=settings.getSamplesNr(), start_time=None):
+        """Starts the scheduler for running samples
+        
+        :param samples: Amount of samples the program shall run.
+        :type samples: int 
+        :param start_time: Delay time for when the first scheduled sample is to be started.
+        :type start_time: datetime.datetime
+        """
         # Log and Data handling
         if not self.database_and_logging_run(start_time, samples):
             settings.setstopSignal(1)
@@ -975,6 +1045,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             # Hide all menus before opening a chosen menu
             self.hide_all_option_menus()
             for button in self.findChildren(QPushButton):
+                # Update styling of the buttons to clear previously 
                 if button.parentWidget() == self.frame_2:
                     button.setStyleSheet("")
 
@@ -1029,6 +1100,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
         # Sett the chosen styling propertis for the stacked, and tab widgets too
         self.stackedWidget.setStyleSheet("background-color: " + self.background + ";")
+        self.stackedWidget_1.setStyleSheet("background-color: " + self.background + ";")
         self.tabWidget.setStyleSheet("""
             QTabWidget{{
                 background-color: {}; /* Set the background color */
@@ -1158,6 +1230,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 self.plotBtn.show()
                 self.moreOptions.show()
                 self.historyOptions.show()
+                self.stackedWidget_1.setCurrentIndex(0)
                 self.methodBtn.setStyleSheet("")
                 self.reportBtn.setStyleSheet("")
                 self.bottleSizeBtn.setStyleSheet("")
@@ -1188,10 +1261,18 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         stylesheet_color = "background-color: " + self.btn_press + ";"
         self.hide_all_option_menus()
         self.toggle_menu()
-        self.stackedWidget.setCurrentIndex(index)
         pressed_button = self.sender()
-        # Update adu button status
-        self.aduWindow.update_adu_relay_buttons()
+        if pressed_button == self.backBtn:
+            self.stackedWidget.setCurrentIndex(0)
+            self.stackedWidget_1.setCurrentIndex(0)
+        elif pressed_button == self.manualBtn:
+            self.stackedWidget.setCurrentIndex(0)
+            self.stackedWidget_1.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(1)
+            self.stackedWidget.setCurrentIndex(index)
+            # Update adu button status
+            self.aduWindow.update_adu_relay_buttons()
 
         for button in self.findChildren(QPushButton):
             if button.parentWidget() == self.frame_2 or button.parentWidget() == self.advancedMenu:
@@ -2931,7 +3012,6 @@ class SFMadv(QWidget, spectrometer_window):
             self.nm_flur.setText('430')
         if settings.getIntegrationTime() is not None:
             self.int_time.setText(str(settings.getIntegrationTime()))
-            # sfm.set_integration_time(int(settings.getIntegrationTime()))
         else:
             self.int_time.setText('500')
             settings.storeIntegrationTime(500)
@@ -3082,10 +3162,10 @@ class SFMadv(QWidget, spectrometer_window):
             txt = self.int_time.text()
             print(txt)
             settings.storeIntegrationTime(int(txt))
+            sfm.set_integration_time()
         except:
             integration_error = ErrorDialog("Integration time must be a whole number!")
             accept = integration_error.exec_()
-            # QMessageBox.warning(self,'Integration Time', 'Integration time must be a whole number!')
     def avgSamples(self):
         try:
             txt = self.avg_nr.text()

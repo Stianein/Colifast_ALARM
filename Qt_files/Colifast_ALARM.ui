@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>924</width>
-    <height>1345</height>
+    <height>1347</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -44,7 +44,7 @@
    <property name="mouseTracking">
     <bool>true</bool>
    </property>
-   <layout class="QGridLayout" name="gridLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_27">
     <property name="sizeConstraint">
      <enum>QLayout::SetNoConstraint</enum>
     </property>
@@ -60,13 +60,7 @@
     <property name="bottomMargin">
      <number>6</number>
     </property>
-    <property name="horizontalSpacing">
-     <number>9</number>
-    </property>
-    <property name="verticalSpacing">
-     <number>4</number>
-    </property>
-    <item row="0" column="0">
+    <item>
      <widget class="QWidget" name="headerContainer" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -324,7 +318,7 @@
          </layout>
         </widget>
        </item>
-       <item alignment="Qt::AlignRight">
+       <item>
         <widget class="QFrame" name="frame_6">
          <property name="minimumSize">
           <size>
@@ -426,7 +420,7 @@
       </layout>
      </widget>
     </item>
-    <item row="1" column="0">
+    <item>
      <widget class="QWidget" name="mainBodyContainer" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -526,7 +520,7 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_3">
                 <property name="spacing">
-                 <number>15</number>
+                 <number>10</number>
                 </property>
                 <item>
                  <widget class="QPushButton" name="bottleSizeBtn">
@@ -583,6 +577,13 @@
                  <widget class="QPushButton" name="reportBtn">
                   <property name="text">
                    <string>Report</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="manualBtn">
+                  <property name="text">
+                   <string>Manual</string>
                   </property>
                  </widget>
                 </item>
@@ -1821,7 +1822,10 @@ color: grey;</string>
                <property name="styleSheet">
                 <string notr="true">background-color: transparent;</string>
                </property>
-               <widget class="QWidget" name="result">
+               <property name="currentIndex">
+                <number>0</number>
+               </property>
+               <widget class="QWidget" name="resultAndManual">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                   <horstretch>0</horstretch>
@@ -1832,44 +1836,22 @@ color: grey;</string>
                  <string notr="true"/>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_8">
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <property name="leftMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>0</number>
-                 </property>
                  <item>
-                  <widget class="QTabWidget" name="tabWidget">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="toolTip">
-                    <string>Medium indicator - click to update bottle</string>
-                   </property>
+                  <widget class="QStackedWidget" name="stackedWidget_1">
+                   <widget class="QWidget" name="result">
+                    <layout class="QVBoxLayout" name="verticalLayout_29">
+                     <item>
+                      <widget class="QTabWidget" name="tabWidget"/>
+                     </item>
+                    </layout>
+                   </widget>
+                   <widget class="QWidget" name="manual">
+                    <layout class="QVBoxLayout" name="verticalLayout_28">
+                     <item>
+                      <widget class="QTextBrowser" name="manualBrowser"/>
+                     </item>
+                    </layout>
+                   </widget>
                   </widget>
                  </item>
                 </layout>
