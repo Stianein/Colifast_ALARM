@@ -75,9 +75,15 @@ def request_spectra():
 		# USB 4000 spectrometers - the old colifast spectrometers - are not supporting nonlinearity correction 
 		# - so try with correction first in case of old spectrometer
 		try:
-			data = spec.intensities(correct_nonlinearity=True, correct_dark_counts=True)
+			try:
+				data = spec.intensities(correct_nonlinearity=True, correct_dark_counts=True)
+			except:
+				data = spec.intensities(correct_nonlinearity=True, correct_dark_counts=False)
 		except:
-			data = spec.intensities(correct_nonlinearity=False, correct_dark_counts=True)
+			try:
+				data = spec.intensities(correct_nonlinearity=False, correct_dark_counts=True)
+			except:
+				data = spec.intensities(correct_nonlinearity=False, correct_dark_counts=False)
 		return data
 	except:
 		raise RuntimeError("Could not initialize spectrophotometer")

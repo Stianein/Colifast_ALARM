@@ -15,11 +15,20 @@ th {
 .enlargeable {
   cursor: pointer;
   transition: transform 0.3s ease;
+  position: relative;
+  float: right;
+    margin-left: 15px; 
+    margin-right: 15px; 
+    margin-bottom: 15px;
+    margin-top: 15px;
 }
 
 .enlargeable:hover {
   transform: scale(2); /* Adjust the scale as needed */
+  transform-origin: right;
+  z-index: 100;
 }
+
 </style>
 
 # Colifast ALARM Instrument Manual
@@ -32,7 +41,11 @@ th {
 - [History](#history)
 - [Report](#report)
 - [Advanced Menu](#advanced-menu)
+  - [ADU](#adu)
+  - [Spectrometer](#spectrometer)
+  - [Liquid Handling](#liquid-handling)
 - [Tips](#tips)
+
 
 # Introduction
 
@@ -41,23 +54,24 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 ---
 
-# Getting Started
+# Getting Started 
+[Back to ToC](#table-of-contents)
 
 1. **Bottle Size Setup:**
-    
+    <img src="Images\bottle_size.png" alt="method_selection" class="enlargeable" width="350">
    - Navigate to the **Bottle Size** menu and set the size of the medium bottle (typically 21 samples per bottle). 
    - This value is directly responsible for stopping the instrument when there is no medium left.
    - The medium progress bar will display the amount of medium remaining.
    - Ensure this value is correct, as the instrument will not allow a run to start if the remaining medium is set to zero.
    - Clicking the medium progress bar allows the user to register the installation of a new bottle.
 
-    ![Bottle Size](Images\bottle_size.png)
+
 
    **Note:** You can order a bottle size that suits your frequency of medium bottle change. Most customers use a 21-day bottle for a 3-week change frequency. Volumes for 14 samples are also readily available. Ensure this setting is aligned with the bottle volume.
 
 2. **Method Selection:**
 
-    <img src="Images\method_selection.png" alt="Instrument Diagram" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
+    <img src="Images\method_selection.png" alt="method_selection" class="enlargeable" width="250">
 
    - Navigate to the **Method** section.
    - From the **Method File** drop-down menu, select the file you want the program to run.
@@ -104,9 +118,9 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 ---
 
 ## History
-
-<img src="Images\history.png" alt="Instrument Diagram" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
-
+[Back to ToC](#table-of-contents)
+<img src="Images\history.png" alt="history menu" class="enlargeable" width="250">
+<br>
 
 - In the **History** menu, you can plot historical data based on date. 
 - **How to Use:**
@@ -115,14 +129,23 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
   - You can plot several samples sequentially. Use the slider to select days or check the **plot samples from current run** option to display all samples from that specific run (based on the bottle size setting).
 
 ## Report
+[Back to ToC](#table-of-contents)
+<img src="Images\report.png" alt="history menu" class="enlargeable" width="200" style="float: right; margin-right: 40px;">
+<br>
+<br>
 
 - In the **Reports** menu, you can generate reports:
   - Click the *create report* button to generate a report.
   - The report will be saved in the  `C:\Colifast\Reports`  folder on your local machine.
+  - The reports are sorted further in folders by year, month, and then the filename contains the date.
+
+<br>
+<br>
 
 ---
 
 # Advanced Menu
+[Back to ToC](#table-of-contents)
 
 **Note:** We do not recommend operators to access this menu.
 
@@ -131,8 +154,11 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 - The access is password protected, and that is simply to avoid messing with important sample runs. Some of the components are not set up to handle multithreading, and trying to access them whilest a method is running might halt the program.
 
 ## ADU
+[Back to ToC](#table-of-contents)
+<img src="Images\ADU_adv.png" alt="ADU_advanced" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
 
-<img src="Images\ADU_adv.png" alt="Instrument Diagram" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
+<br>
+<br>
 
 - This page allows the user to manually turn on/off the relays of the **ADU208** relay unit. 
     - There is an *ADU Load* button for initializing and updating the ports of the ADU. 
@@ -141,16 +167,20 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
     - The *Test* button runs read and write calls to all the ports of the device
 <br>
 <br>
+
 ## Spectrometer
-
-<img src="Images\spectrometer.png" alt="Instrument Diagram" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
-
+[Back to ToC](#table-of-contents)
 - This page allow the user to load available spectrometers, and run some service tasks related to the spectrometer
+    <img src="Images\calibration.png" alt="spectrometer" class="enlargeable" width="100">
+
+
     #### Calibrate
     - Opens a dialogue that allows you to read the turbidity.
     - This must be done using bottles containing the right turbidity solutions (0, 5, or 10 NTU). 
     - After the value is read the user can choose to **Save New Value to settings**, and thereby updating the calibration value.
     #### Spectrometer operation
+    <img src="Images\spectrometer.png" alt="spectrometer" class="enlargeable" width="250">
+
     - **Readings to avrerage over** is a value that tells the equipment how many readings the spectrometer shall take before it calculates the average and returns the value, default 3 readings.
     - **Integration Time** is the time used by the spectrometer to scan a single reading in milliseconds, deafualt is set to 500 ms (0.5 s).
     #### Fluorescence
@@ -166,12 +196,15 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
     - The **Spectrometer Liveview** button is starting a live plotting of the input to the spectrophotometer, with the wavelength on the x-axis and intensity on the y-axis.      
 
 ## Liquid Handling
+[Back to ToC](#table-of-contents)
 
 **Note:** This is not integrated with computational threading and should thus not be used during a sample run. 
 
 - This page allow the user to manualy control the pumps and liquid ports of the system. 
 
 ### Syringe Pump
+<img src="Images\liquid_handling.png" alt="spectrometer" class="enlargeable" width="350">
+
 - **Initialize** the pump at the chosen **Syringe COM port**.
 - Send a **Custom command** to the syringe pump using the text field, then press the button.
 - Click on the **valve head** to change port, the tooltip shows which port it will change to upon clicking, which is then the oposite of the current port.
@@ -225,6 +258,7 @@ COM ports are external connections to computers, that once connected, works almo
 ---
 
 # Tips
+[Back to ToC](#table-of-contents)
 
 - Stopping
     - The **Stop Button**  <img src="icons\square.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;">

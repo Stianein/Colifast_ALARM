@@ -49,10 +49,6 @@ def run_method(self, filename, sample_id, status_message, update_plot, error_msg
 	error_message = error_msg
 	status = status_message
 	
-	# store info in db
-	db = DatabaseHandler()
-	current_run = db.fetch_data("SELECT sample_start_time FROM SampleInfo WHERE id = ?", sample_id)[0][0]
-
 	startTime.emit(now())
 	# Code that interpret the method file directly as python code
 	with open(filename, 'r', newline='') as file:
@@ -95,11 +91,12 @@ def sfm_read(wavelength, store_data=True, nm_bandwidth = 1, readings_to_average_
 	global plottr
 	global sampleID
 	
-	db = DatabaseHandler()
-	# Get runID
-	query = 'SELECT run_id FROM SampleInfo WHERE id = ?'
-	run_id = db.fetch_data(query, sampleID)[0][0]
-	print("RUNID: ", run_id)
+	if store_data:
+		db = DatabaseHandler()
+		# Get runID
+		query = 'SELECT run_id FROM SampleInfo WHERE id = ?'
+		run_id = db.fetch_data(query, sampleID)[0][0]
+		print("RUNID: ", run_id)
 
 	# Fetch the value of readings to average over from settings
 	if not readings_to_average_over:

@@ -13,14 +13,15 @@ from PyQt5.QtGui import (
 )
 from PyQt5.QtCore import (
     Qt, QPoint, QCoreApplication,
-    QThread, pyqtSignal, QDate, QTimer, QFile, QTextStream
+    QThread, pyqtSignal, QDate, QTimer, QFile, QTextStream, QUrl
 )
 from PyQt5.QtWidgets import (
     QLineEdit, QGroupBox, QGraphicsProxyWidget, QGraphicsLinearLayout, QSlider,
     QHBoxLayout, QVBoxLayout, QLabel, QButtonGroup, QRadioButton, QInputDialog,
     QPushButton, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene, QTabBar,
     QMainWindow, QMessageBox, QToolButton, QDockWidget, QGraphicsItem,
-    QWidget, QApplication, QSizePolicy, QDialog, QFileDialog, QCheckBox, QMenu, QAction
+    QWidget, QApplication, QSizePolicy, QDialog, QFileDialog, QCheckBox, QMenu, QAction,
+    QTextBrowser
 )
 from PyQt5.QtSvg import QSvgRenderer
 
@@ -371,9 +372,11 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # set the size of the window  on opening
         self.resize(800, 600)
 
+
+
+
         from markdown_it import MarkdownIt
         
-
         # Initialize the MarkdownIt parser
         self.md = MarkdownIt()
 
@@ -384,48 +387,25 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
     def load_markdown(self, markdown_path):
         # Convert Markdown to HTML
-        with open(markdown_path, "r") as file:
+        with open(resource_path(os.path.join(path, markdown_path)), "r") as file:
             md_content = file.read()
         html_content = self.md.render(md_content)
 
-        # Load the HTML into QTextBrowser
+        # # Load the HTML into QTextBrowser
         self.text_browser.setHtml(html_content)
 
-        # Apply a stylesheet
-        self.apply_stylesheet()
+        # Connect the anchorClicked signal to handle link clicks
+        self.text_browser.anchorClicked.connect(self.handle_link_click)
 
-    def apply_stylesheet(self):
-        # Path to your stylesheet
-        stylesheet_path = os.path.join(os.path.dirname(__file__), 'Styles/style.css')
-        
-        # Check if stylesheet exists
-        if os.path.exists(stylesheet_path):
-            with open(stylesheet_path, 'r') as file:
-                stylesheet = file.read()
-            self.text_browser.setStyleSheet(stylesheet)
+    def handle_link_click(self, url):
+        # Handle internal anchor links (e.g., jumping to a section within the same document)
+        if url.hasFragment():
+            print("fragmented")
+            self.text_browser.scrollToAnchor(url.fragment())
         else:
-            print(f"Stylesheet not found: {stylesheet_path}")
+            # If the link is an external URL, open it in a browser
+            QDesktopServices.openUrl(url)
 
-
-        # # Load Markdown file and convert to HTML
-        # with open("manual.md", "r") as file:
-        #     md_content = file.read()
-
-        # html_content = markdown.markdown(md_content)
-
-        # # Link the external CSS stylesheet
-        # relative_stylesheet_path = os.path.join("styles", "stylesheet.css")
-
-        # stylesheet_link = f"""
-        # <link rel="stylesheet" type="text/css" href="{relative_stylesheet_path}">
-        # """
-
-        # # Embed the stylesheet link into the HTML content
-        # html_with_css = f"<html><head>{stylesheet_link}</head><body>{html_content}</body></html>"
-
-        # # Create a QTextBrowser to display the HTML content
-        # text_browser = self.manualBrowser
-        # text_browser.setHtml(html_with_css)
 
 
     ### Method Start/Stop functions ###
@@ -606,85 +586,91 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
     # Function collect data, and handle continuation of scheduled runs when
     # a sample is finished and handle icon change when run has finished
     def finished_run(self):
-        # Get data from sample id
-        db  = DatabaseHandler()
-        data = db.fetch_data("SELECT sample_start_time, sample_number FROM SampleInfo WHERE id = ?", self.sample_id)
+        # In case the method is not meant to create datapoints in the database, 
+        # this try/except wrapping makes the program ignore all the lacking data values.
+        try:
+            # Get data from sample id
+            db  = DatabaseHandler()
+            data = db.fetch_data("SELECT sample_start_time, sample_number FROM SampleInfo WHERE id = ?", self.sample_id)
 
-        # Calculate run time from end time - start time
-        start_time = self.datetimestringler(data[0][0])
-        sample_number = data[0][1]
-        end_time = datetime.datetime.now()
-        sample_time = end_time - start_time
+            # Calculate run time from end time - start time
+            start_time = self.datetimestringler(data[0][0])
+            sample_number = data[0][1]
+            end_time = datetime.datetime.now()
+            sample_time = end_time - start_time
 
-        # Update to database with total sample time
-        db.execute_query("UPDATE SampleInfo SET full_sample_time = ? WHERE id = ?", str(sample_time), self.sample_id)
+            # Update to database with total sample time
+            db.execute_query("UPDATE SampleInfo SET full_sample_time = ? WHERE id = ?", str(sample_time), self.sample_id)
 
-        # Update progressbar and change sample running icon
-        self.update_medium_progress_bar()
 
-        # Update the alternating sample source if that option is checked
-        if self.dualSamples.checkState():
-            self.update_dual_samples()
+            # Update progressbar and change sample running icon
+            self.update_medium_progress_bar()
 
-        # THE LAST SAMPLE HAS FINISHED #
-        if sample_number >= settings.getSamplesNr() or settings.getRemaining() <= 0:
-            print("sample_nmb: ", sample_number, "settings: ", settings.getSamplesNr(), "Settings remain: ", settings.getRemaining())
-            self.mobileRemoteToggle.stop()
-            # Update start/stop button
-            self.startNewMethod.setChecked(True)
-            self.stop_updater()
-            # if not settings.getFrequency() == 0:
-            if not settings.getFrequency() == 0:
-                self.scheduler.remove_all_jobs()
-                self.scheduler.shutdown()
-                self.scheduler = BackgroundScheduler()
+            # Update the alternating sample source if that option is checked
+            if self.dualSamples.checkState():
+                self.update_dual_samples()
 
-            self.setStatus("All the scheduled runs have finished, add a new bottle of medium and start a new run")
-
-        # THERE ARE MORE SAMPLES IN THE RUN #
-        else:
-            # Aborting run now after this sample as the user has clicked/called for it 
-            if self.stop_after_current_sample:
-                # Reset the stop after current sample parameter
-                self.stop_after_current_sample = False
-                self.setStatus("The run was stoped now, after ended sample")
-                # Print awaiting remote start to status browser if there are more samples left in the medium container
-                if settings.getRemaining() > 0:
-                    time.sleep(1)
-                    self.setStatus("Awaiting remote start...")
-                self.stop_updater()
+            # THE LAST SAMPLE HAS FINISHED #
+            if sample_number >= settings.getSamplesNr() or settings.getRemaining() <= 0:
+                print("sample_nmb: ", sample_number, "settings: ", settings.getSamplesNr(), "Settings remain: ", settings.getRemaining())
+                self.mobileRemoteToggle.stop()
+                # Update start/stop button
                 self.startNewMethod.setChecked(True)
-                return
-            # If the run is continuous the next sample is just started imediately.
-            if settings.getFrequency() == 0:
-                # A control check if the user has stoped the program without it being handled by the software
-                if self.startNewMethod.isChecked():
-                    self.setStatus("The user has stoped the run")
-                    return
-                else:
-                    self.start_new_sample()
-            # If the run is following intervals between samples, the next run is started with a delay.
+                self.stop_updater()
+                # if not settings.getFrequency() == 0:
+                if not settings.getFrequency() == 0:
+                    self.scheduler.remove_all_jobs()
+                    self.scheduler.shutdown()
+                    self.scheduler = BackgroundScheduler()
+
+                self.setStatus("All the scheduled runs have finished, add a new bottle of medium and start a new run")
+
+            # THERE ARE MORE SAMPLES IN THE RUN #
             else:
-                try:
-                    # Pop the old futur sample from the list, so that the next is executed
-                    self.future_samples.pop(0)
-                except:
-                    self.log.info("No future samples found")
-                # If remote start is set, check if it is activated, or wait for activation
-                if settings.getRemoteStart():
-                    if not self.call_start:
-                        self.future_samples = []
+                # Aborting run now after this sample as the user has clicked/called for it 
+                if self.stop_after_current_sample:
+                    # Reset the stop after current sample parameter
+                    self.stop_after_current_sample = False
+                    self.setStatus("The run was stoped now, after ended sample")
+                    # Print awaiting remote start to status browser if there are more samples left in the medium container
+                    if settings.getRemaining() > 0:
+                        time.sleep(1)
                         self.setStatus("Awaiting remote start...")
+                    self.stop_updater()
+                    self.startNewMethod.setChecked(True)
+                    return
+                # If the run is continuous the next sample is just started imediately.
+                if settings.getFrequency() == 0:
+                    # A control check if the user has stoped the program without it being handled by the software
+                    if self.startNewMethod.isChecked():
+                        self.setStatus("The user has stoped the run")
                         return
                     else:
-                        pass
-                # ADD the next job to the scheduler - this way the only info about futur run is kept in future_samples list,
-                # and can thus be modified here, before it is added to the scheduler(mobstart or other features for start/stop)
-                self.scheduler.add_job(self.start_new_sample, 'date', run_date=self.future_samples[0], misfire_grace_time=30)
-                next_sample = self.datetimestringler(self.future_samples[0])
-                # Update next sample in status browser
-                string = f"Delay next sample, {next_sample}"
-                self.setStatus(string)
+                        self.start_new_sample()
+                # If the run is following intervals between samples, the next run is started with a delay.
+                else:
+                    try:
+                        # Pop the old futur sample from the list, so that the next is executed
+                        self.future_samples.pop(0)
+                    except:
+                        self.log.info("No future samples found")
+                    # If remote start is set, check if it is activated, or wait for activation
+                    if settings.getRemoteStart():
+                        if not self.call_start:
+                            self.future_samples = []
+                            self.setStatus("Awaiting remote start...")
+                            return
+                        else:
+                            pass
+                    # ADD the next job to the scheduler - this way the only info about futur run is kept in future_samples list,
+                    # and can thus be modified here, before it is added to the scheduler(mobstart or other features for start/stop)
+                    self.scheduler.add_job(self.start_new_sample, 'date', run_date=self.future_samples[0], misfire_grace_time=30)
+                    next_sample = self.datetimestringler(self.future_samples[0])
+                    # Update next sample in status browser
+                    string = f"Delay next sample, {next_sample}"
+                    self.setStatus(string)
+        except:
+            print("The finish run function stalled, you might be running a calibration method, or other service methods?")
         return
 
 
@@ -1646,13 +1632,14 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         delay = None
         if "Continuous" in sample_freq:
             delay = 0
-        elif "24 hour cycles" in sample_freq:
+        elif "24 hours cycle" in sample_freq:
             delay = 1
-        elif "48 hour cycles" in sample_freq:
+        elif "48 hours cycle" in sample_freq:
             delay = 2
         elif "Manual" in sample_freq:
             delay, ok_pressed = QInputDialog.getInt(self, "Sample Run Scheduler", "Enter the number of days between sample runs:")
         settings.storeFrequency(delay)
+        print(settings.getFrequency())
 
     # Function to handle manual option of sample frequency
     def get_frequency(self):
@@ -2598,34 +2585,6 @@ class DatabaseHandler:
 
 ### Class to listen for signal from the gsm modem into the adu         ###
 ### in separate thread than both the gui and the workerthread (method) ###
-# class GSM_listner(QThread):
-#     # Signal to main thread
-#     call_start = pyqtSignal(bool)
-
-#     def __init__(self, main_window):
-#         super().__init__()
-#         self.running = False
-#     # Funcion to start listner
-#     def run(self):
-#         self.running = True
-#         # Wait loop for signal into adu reads every n-th second
-#         n = 10
-#         counter = 0
-#         while self.running:
-#             # adu.initialize()
-#             result = adu.read("RPA0")
-#             print("PA0 result: ", result)
-#             counter += 1
-#             if result:
-#                 self.call_start.emit(True)
-#                 print("Signal received from ADU...")
-#                 # Resets after 20 sec
-#             time.sleep(n)
-
-#     def stop(self):
-#         self.running = False
-
-
 class GSM_listner(QThread):
     # Signal to main thread
     call_start = pyqtSignal(bool)
@@ -2682,7 +2641,7 @@ class WorkerThread(QThread):
     def set_sample_id(self, sample_id):
         self.sample_id = sample_id
 
-    def run(self):
+    def run(self, method=None):
         # Check that a bottle size is selected
         if settings.getBottleSize() == 0 or settings.getBottleSize() == None:
             ## MESSAGE with Ok button TO FORCE A CHOICE FROM USER ON BOTTLE SIZE ##
@@ -2699,7 +2658,12 @@ class WorkerThread(QThread):
             QCoreApplication.processEvents()
 
             #settings.storeMethod('.\Methods\metode_test.txt')
-            if settings.getMethod() is not None or settings.getMethod() == "":
+            if method:
+                f_name = method
+                # Start the long running method
+                method_helper.run_method(self, f_name, self.sample_id, self.status_message, self.update_plot\
+                                         , self.error_msg, self.startTime, self.bactAlarm, self.turbAlarm, self.finished_signal)
+            elif settings.getMethod() is not None or settings.getMethod() == "":
                 f_name = settings.getMethod()
                 # Start the long running method
                 method_helper.run_method(self, f_name, self.sample_id, self.status_message, self.update_plot\
@@ -3062,8 +3026,10 @@ class SFMadv(QWidget, spectrometer_window):
         self.oceanOpticsDevices.addItem("Spectrometer")
         list = sfm.get_connected_devices()
         if not list:
-            run_function_with_admin_privilege()
-        print(list)
+            no_spectrometer = ErrorDialog("Can't detect any spectrometers, please make sure a device is connected.")
+            accept = no_spectrometer.exec_()
+            if accept:
+                return
         for i in list:
             print(i.serial_number)
             self.oceanOpticsDevices.addItem(i.serial_number)
@@ -3288,6 +3254,7 @@ class CalibrationDialog(QDialog):
         self.use_new_button.clicked.connect(self.use_new_value)
         self.turbReadBtn.clicked.connect(self.turbidity_reading)
 
+
         self.old_value_label.setText(f"Old Value: {self.old_value}")
 
     # Change the selected turbidity solution 0, 5, or 10
@@ -3328,15 +3295,9 @@ class CalibrationDialog(QDialog):
             print("choose a valid file")
             return
 
-        with open(filename, 'r', newline='') as file:
-            method = file.read()
-
-        globals_dict = globals().copy()
-        locals_dict = locals().copy()
-
-        print(method)
-        exec(method, globals_dict, locals_dict)
-        print("Done running chosen calibration file")
+        self.main.worker_thread.set_sample_id(None)
+        self.main.worker_thread.run(filename)
+        self.new_value = float(self.main.startingTime.toPlainText())
 
         turb_cal_zero_value = settings.getCalTurb0()
         turb_cal_10_value = settings.getCalTurb10()
