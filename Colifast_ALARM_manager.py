@@ -24,6 +24,7 @@ from PyQt5.QtWidgets import (
     QTextBrowser
 )
 from PyQt5.QtSvg import QSvgRenderer
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 # PyQt helper modules
 import pyqtgraph as pg
@@ -369,42 +370,47 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.restorebtn.clicked.connect(self.toggle_maximized)
         self.minimizebtn.clicked.connect(self.minimize_window)
 
+
+
+
+        # Load the markdown manual and implement it in its QTextBorwser page #
+        from markdown_it import MarkdownIt
+        # from markdown_it.extensions.toc import toc_plugin
+
+        # Initialize the MarkdownIt parser
+        self.md = MarkdownIt()
+
+        # Convert markdown to html
+        html_content = self.convert_markdown_to_html(os.path.join(path, "manual.md"))
+        # Load the HTML into the QTextBrowser from the designer file
+        self.manualBrowser.setHtml(html_content)
+
         # set the size of the window  on opening
         self.resize(800, 600)
 
 
 
-
-        from markdown_it import MarkdownIt
-        
-        # Initialize the MarkdownIt parser
-        self.md = MarkdownIt()
-
-         # Create a QTextBrowser to display the HTML content
-        self.text_browser = self.manualBrowser
-        # Load and display the Markdown content
-        self.load_markdown("manual.md")
-
-    def load_markdown(self, markdown_path):
-        # Convert Markdown to HTML
-        with open(resource_path(os.path.join(path, markdown_path)), "r") as file:
+    # Convert markdown to html and adjust path to images for the pyinstaller folder structure.
+    def convert_markdown_to_html(self, md_file_path):
+        with open(md_file_path, 'r') as file:
             md_content = file.read()
+
+        # Convert Markdown to HTML
         html_content = self.md.render(md_content)
+        print(html_content)
+#         # Adjust relative path to exe
+#         path_to_manual =f'''
+# <head>
+#     <base href="{path}\\">
+# </head>
+# '''    
+        # print(path_to_manual) 
+        # html_content = path_to_manual + html_content
 
-        # # Load the HTML into QTextBrowser
-        self.text_browser.setHtml(html_content)
-
-        # Connect the anchorClicked signal to handle link clicks
-        self.text_browser.anchorClicked.connect(self.handle_link_click)
-
-    def handle_link_click(self, url):
-        # Handle internal anchor links (e.g., jumping to a section within the same document)
-        if url.hasFragment():
-            print("fragmented")
-            self.text_browser.scrollToAnchor(url.fragment())
-        else:
-            # If the link is an external URL, open it in a browser
-            QDesktopServices.openUrl(url)
+        # Adjust image paths for pyinstaller's exe file and the _internal folder
+        # html_content = html_content.replace('src="Images', f'src="{"_internal/Images"}')
+        
+        return html_content
 
 
 

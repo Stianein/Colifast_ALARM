@@ -30,7 +30,7 @@ a = Analysis(
         (os.path.join(path_to_program, 'AduHid64.dll'), '.'),
         (os.path.join(path_to_program, 'AduHid.dll'), '.'),
         (os.path.join(path_to_program, 'run_seabreeze_setup.bat'), '.'),
-        (os.path.join(path_to_program, 'manual.md'), '.'),
+        (os.path.join(path_to_program, 'Manual.md'), '.'),
         (os.path.join(sys.exec_prefix, 'Lib'), 'Lib'),
 
         # Include any additional directories or files necessary

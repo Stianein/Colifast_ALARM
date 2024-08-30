@@ -1,4 +1,7 @@
 <style>
+body {
+    font-family: 'Calibri', sans-serif;
+}
 table {
     width: 100%;
     border-collapse: collapse;
@@ -24,7 +27,7 @@ th {
 }
 
 .enlargeable:hover {
-  transform: scale(2); /* Adjust the scale as needed */
+  transform: scale(1.5); /* Adjust the scale as needed */
   transform-origin: right;
   z-index: 100;
 }
@@ -35,7 +38,8 @@ th {
 
 **Developed by Stian Eide Ingebrigtsen for Colifast AS**
 
-# Table of Contents
+<h1 id="table-of-contents">Table of Contents</h1>
+
 - [Introduction](#introduction)
 - [Getting Started](#getting-started)
 - [History](#history)
@@ -47,14 +51,15 @@ th {
 - [Tips](#tips)
 
 
-# Introduction
+<h1 id="introduction">Introduction</h1>
 
 This software is intended to operate the Colifast ALARM Instrument with its components. Method files can be loaded to run different setups, and you can create files to conduct specific tasks utilizing the components in a customized manner.
 [ColifastALARM](link-to-picture-of-CALARM-with-new-software)
 
 ---
 
-# Getting Started 
+<h1 id="getting-started">Getting Started</h1>
+
 [Back to ToC](#table-of-contents)
 
 1. **Bottle Size Setup:**
@@ -117,9 +122,11 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
         
 ---
 
-## History
+<h2 id="history">History</h2>
+
 [Back to ToC](#table-of-contents)
-<img src="Images\history.png" alt="history menu" class="enlargeable" width="250">
+
+<img src="Images/history.png" alt="history_menu" class="enlargeable" width="250">
 <br>
 
 - In the **History** menu, you can plot historical data based on date. 
@@ -128,8 +135,10 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
   - If multiple samples are available for a given date, the program will prompt you to select the starting time of the sample you want to plot.
   - You can plot several samples sequentially. Use the slider to select days or check the **plot samples from current run** option to display all samples from that specific run (based on the bottle size setting).
 
-## Report
+<h2 id="report">Report</h2>
+
 [Back to ToC](#table-of-contents)
+
 <img src="Images\report.png" alt="history menu" class="enlargeable" width="200" style="float: right; margin-right: 40px;">
 <br>
 <br>
@@ -144,7 +153,8 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 ---
 
-# Advanced Menu
+<h1 id="advanced-menu">Advanced Menu</h1>
+
 [Back to ToC](#table-of-contents)
 
 **Note:** We do not recommend operators to access this menu.
@@ -153,8 +163,10 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 - This is a feature for doing service on the equipment.
 - The access is password protected, and that is simply to avoid messing with important sample runs. Some of the components are not set up to handle multithreading, and trying to access them whilest a method is running might halt the program.
 
-## ADU
+<h2 id="adu">ADU</h2>
+
 [Back to ToC](#table-of-contents)
+
 <img src="Images\ADU_adv.png" alt="ADU_advanced" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
 
 <br>
@@ -168,8 +180,10 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 <br>
 <br>
 
-## Spectrometer
+<h2 id="spectrometer">Spectrometer</h2>
+
 [Back to ToC](#table-of-contents)
+
 - This page allow the user to load available spectrometers, and run some service tasks related to the spectrometer
     <img src="Images\calibration.png" alt="spectrometer" class="enlargeable" width="100">
 
@@ -195,14 +209,16 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
     #### Spectrograph
     - The **Spectrometer Liveview** button is starting a live plotting of the input to the spectrophotometer, with the wavelength on the x-axis and intensity on the y-axis.      
 
-## Liquid Handling
+<h2 id="liquid-handling">Liquid Handling</h2>
+
 [Back to ToC](#table-of-contents)
 
 **Note:** This is not integrated with computational threading and should thus not be used during a sample run. 
 
 - This page allow the user to manualy control the pumps and liquid ports of the system. 
 
-### Syringe Pump
+<h3 id="syringe-pump">Syringe Pump</h3>
+
 <img src="Images\liquid_handling.png" alt="spectrometer" class="enlargeable" width="350">
 
 - **Initialize** the pump at the chosen **Syringe COM port**.
@@ -215,7 +231,9 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 COM ports are external connections to computers, that once connected, works almost as integrel parts of the computer. The are therefor often very stable once set up, but if there is some error to the connection they will not propperly reset before the system has undergone a rebooting. That is why we often recommend a reboot when the system has trouble connecting to the syringe pump.
 
-### Multiposition Valve (MPV)
+
+<h3 id="multiposition-valve">Multiposition Valve</h3>
+
 - **Initialize** the valve shifter at the chosen **MPV COM port**.
 - The **Syringe pump** is connected to the senter of the **MPV**, and the senter is then linked to one of the 6 channels of the valve.
 - Choose a valve and **CLICK** on it to shift to its position, the tooltip will display what the channel is. Default positions are as follows:
@@ -252,12 +270,15 @@ COM ports are external connections to computers, that once connected, works almo
     </table>
 
 
-### Peristaltic Pump
+
+<h3 id="peristaltic-pump">Peristaltic Pump</h3>
+
 - The **Peristaltic pump** picture is also a button that turns on/off the peristaltic pump.
 
 ---
 
-# Tips
+<h1 id="tips">Tips</h1>
+
 [Back to ToC](#table-of-contents)
 
 - Stopping

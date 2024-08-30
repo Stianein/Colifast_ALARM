@@ -1848,7 +1848,13 @@ color: grey;</string>
                    <widget class="QWidget" name="manual">
                     <layout class="QVBoxLayout" name="verticalLayout_28">
                      <item>
-                      <widget class="QTextBrowser" name="manualBrowser"/>
+                      <widget class="QWebEngineView" name="manualBrowser">
+                       <property name="url">
+                        <url>
+                         <string>about:blank</string>
+                        </url>
+                       </property>
+                      </widget>
                      </item>
                     </layout>
                    </widget>
@@ -2326,6 +2332,13 @@ color: grey;</string>
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebEngineView</class>
+   <extends>QWidget</extends>
+   <header location="global">QtWebEngineWidgets/QWebEngineView</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../Icons.qrc"/>
   <include location="../Icons.qrc"/>
