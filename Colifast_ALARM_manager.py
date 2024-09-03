@@ -2,7 +2,8 @@
 # Author: Stian Eide Ingebrigtsen
 
 """ Colifast ALARM MANAGER 
-Displays the full Colifast ALARM GUI. It contains or call the component interfaces, found in python designer files folder. It Calls the 
+Displays the full Colifast ALARM GUI. It contains or call the component interfaces, found in python designer files folder. 
+It Calls the method_helper file to start a long running sample analysis in a separate thread. 
 """
 
 from python_designer_files.Colifast_ALARM import Ui_MainWindow
@@ -60,7 +61,6 @@ from python_designer_files.Error_message_dialog import Ui_Dialog as Ui_ErrorDial
 import python_designer_files.clock_time_picker as time_pckr
 import python_designer_files.editor as editor
 
-import markdown
 
 # Get the directory of the current file
 current_file_directory = os.path.dirname(os.path.abspath(__file__))
@@ -398,14 +398,17 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Convert Markdown to HTML
         html_content = self.md.render(md_content)
         print(html_content)
-#         # Adjust relative path to exe
+
+# #         # Adjust relative path to exe
 #         path_to_manual =f'''
+
 # <head>
 #     <base href="{path}\\">
 # </head>
-# '''    
-        # print(path_to_manual) 
-        # html_content = path_to_manual + html_content
+# '''
+   
+#         # print(path_to_manual) 
+#         html_content = path_to_manual + html_content
 
         # Adjust image paths for pyinstaller's exe file and the _internal folder
         # html_content = html_content.replace('src="Images', f'src="{"_internal/Images"}')
