@@ -8,7 +8,6 @@ Welcome to the **Colifast ALARM software** documentation! This project is design
 - [Contributing](#contributing)
 
 ## Overview
-Project Name is a [type of project] that allows you to [key functionality]. It's designed to be [easy to use/fast/powerful], and it's perfect for [target audience].
 
 In this project I have developed software for the Colifast ALARM instrument. We sought to take more control over the whole of the equipement (previously purchased software), which measures fecal indicator bacteria in water recipients, see our web page for more info on it´s usecases.
 
