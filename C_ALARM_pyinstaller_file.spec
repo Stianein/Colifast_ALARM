@@ -16,7 +16,7 @@ a = Analysis(
     datas=[
         (os.path.join(path_to_program, 'python_designer_files'), 'python_designer_files'),
         (os.path.join(path_to_program, 'components'), 'components'),
-        (os.path.join(path_to_program, 'Images'), 'Images'),
+        (os.path.join(path_to_program, 'images'), 'images'),
         (os.path.join(path_to_program, 'icons'), 'icons'),
         (os.path.join(path_to_program, 'Styles'), 'Styles'),
         (os.path.join(path_to_program, '__init__.py'), '.'),

@@ -76,8 +76,8 @@ class ADUadv(QWidget, ADU_window):
         self.installEventFilter(self)
         
         # Set the custom buttons' icons
-        self.green_ring = QIcon(resource_path(os.path.join(parent_directory, "Images\\ring1.png")))
-        self.red_ring = QIcon(resource_path(os.path.join(parent_directory, "Images\\ring_red.png")))
+        self.green_ring = QIcon(resource_path(os.path.join(parent_directory, "images\\ring1.png")))
+        self.red_ring = QIcon(resource_path(os.path.join(parent_directory, "images\\ring_red.png")))
 
         self.graphics_View = CustomGraphicsView(self)     
         self.verticalLayout_6.addWidget(self.graphics_View)
@@ -87,7 +87,7 @@ class ADUadv(QWidget, ADU_window):
         self.graphics_View.setScene(self.scene)
         
         # Load the image as a QPixmap and add it to the scene
-        pixmap = QPixmap(resource_path(os.path.join(parent_directory, "Images\\ADU2082.png")))
+        pixmap = QPixmap(resource_path(os.path.join(parent_directory, "images\\ADU2082.png")))
         image_item = QGraphicsPixmapItem(pixmap)
         self.scene.addItem(image_item)
         
@@ -334,6 +334,7 @@ class ADUadv(QWidget, ADU_window):
             from Colifast_ALARM_manager import ErrorDialog
             error_message = f"Cannot connect to the adu"
             dialog = ErrorDialog(error_message)
+            dialog.exec_()
 
     # Update the ADU status field
     def initialize(self):

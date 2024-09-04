@@ -61,6 +61,8 @@ from python_designer_files.Error_message_dialog import Ui_Dialog as Ui_ErrorDial
 import python_designer_files.clock_time_picker as time_pckr
 import python_designer_files.editor as editor
 
+os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-gpu"
+
 
 # Get the directory of the current file
 current_file_directory = os.path.dirname(os.path.abspath(__file__))
@@ -372,7 +374,6 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
 
 
-
         # Load the markdown manual and implement it in its QTextBorwser page #
         from markdown_it import MarkdownIt
         # from markdown_it.extensions.toc import toc_plugin
@@ -381,7 +382,9 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.md = MarkdownIt()
 
         # Convert markdown to html
-        html_content = self.convert_markdown_to_html(os.path.join(path, "manual.md"))
+        html_content = self.convert_markdown_to_html(os.path.join(path, "Manual.md"))
+        print(html_content)
+
         # Load the HTML into the QTextBrowser from the designer file
         self.manualBrowser.setHtml(html_content)
 
@@ -389,30 +392,17 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.resize(800, 600)
 
 
-
-    # Convert markdown to html and adjust path to images for the pyinstaller folder structure.
+    # Convert markdown to html and adjust paths to images for the pyinstaller folder structure.
     def convert_markdown_to_html(self, md_file_path):
         with open(md_file_path, 'r') as file:
             md_content = file.read()
 
         # Convert Markdown to HTML
         html_content = self.md.render(md_content)
-        print(html_content)
-
-# #         # Adjust relative path to exe
-#         path_to_manual =f'''
-
-# <head>
-#     <base href="{path}\\">
-# </head>
-# '''
-   
-#         # print(path_to_manual) 
-#         html_content = path_to_manual + html_content
 
         # Adjust image paths for pyinstaller's exe file and the _internal folder
-        # html_content = html_content.replace('src="Images', f'src="{"_internal/Images"}')
-        
+        html_content = html_content.replace('src="images', f'src="{path}\\images')
+
         return html_content
 
 
@@ -2293,7 +2283,7 @@ class PDFReport(FPDF):
     # Function for making the Header of the report 
     def header(self):
         # Add logo
-        logo = resource_path(os.path.join(path, 'Images\Colifast_50pix.png'))
+        logo = resource_path(os.path.join(path, 'images\Colifast_50pix.png'))
         self.image(logo, 11, 18, 50)
         # Set font for header
         self.set_font('Arial', 'B', 15)
@@ -3020,7 +3010,7 @@ class SFMadv(QWidget, spectrometer_window):
         # Button click actions
         self.calib_btn.clicked.connect(self.calibrate)
         self.graph_btn.clicked.connect(self.graphButton)
-        self.refreshDeviceList.clicked.connect(self.update_device_list)
+        self.refreshDeviceList.clicked.connect(self.refresh_device_list)
         self.UVLED.clicked.connect(self.UV_LED)
         self.IRLED.clicked.connect(self.IR_LED)
 
@@ -3030,15 +3020,20 @@ class SFMadv(QWidget, spectrometer_window):
     def IR_LED(self):
         self.main.aduWindow.K4_btn.click()
 
+    # Give out error message when user tries to update divice list and there are no detected devices
+    def refresh_device_list(self):
+        if not self.update_device_list():
+            no_spectrometer = ErrorDialog("Can't detect any spectrometers, please make sure a device is connected.")
+            accept = no_spectrometer.exec_()
+            if accept:
+                return
+    # Update device list if there are any detected - don't give error messages on start up if no devices are connected
     def update_device_list(self):
         self.oceanOpticsDevices.clear()
         self.oceanOpticsDevices.addItem("Spectrometer")
         list = sfm.get_connected_devices()
         if not list:
-            no_spectrometer = ErrorDialog("Can't detect any spectrometers, please make sure a device is connected.")
-            accept = no_spectrometer.exec_()
-            if accept:
-                return
+            return False
         for i in list:
             print(i.serial_number)
             self.oceanOpticsDevices.addItem(i.serial_number)
@@ -3424,7 +3419,7 @@ class LiquidHandling(QWidget):
         self.layout.addWidget(self.graphicsView)
 
         # Load the image as a QPixmap and add it to the scene
-        image_path = resource_path(os.path.join(path, "Images\\Liquid HAndling.jpg"))
+        image_path = resource_path(os.path.join(path, "images\\Liquid HAndling.jpg"))
         pixmap = QPixmap(image_path)
         self.image_item = QGraphicsPixmapItem(pixmap)
         self.scene.addItem(self.image_item)
@@ -3614,7 +3609,7 @@ class LiquidHandling(QWidget):
              'valve changer': {
                  'proxy': QGraphicsProxyWidget(),
                  'button': self.valve_changer_btn,
-                # 'icon': "Images/peri p.gif",
+                # 'icon': "images/peri p.gif",
                  'style': "QPushButton {background-color: transparent; width: 75; height:75; border-radius: 37; color: transparent; } QPushButton:hover {background-color: transparent; width: 75; height:75; border: 6px solid lightblue; border-radius: 37; }",
                  # 'style': "QPushButton { background-color: transparent; border: none; text-align: center;}",# border-radius: 50px; width: 75px; height: 75px; }",
                  'position': (130, 3),
@@ -3651,43 +3646,43 @@ class LiquidHandling(QWidget):
              'V1': {
                 'proxy': QGraphicsProxyWidget(),
                 'button': self.V1_btn,
-                # 'icon': "Images/ring_red.png",
+                # 'icon': "images/ring_red.png",
                 'position': (517, 29),  # Y-value decreased by 90
             },
             'V2': {
                 'proxy': QGraphicsProxyWidget(),
                 'button': self.V2_btn,
-                # 'icon': "Images/ring_red.png",
+                # 'icon': "images/ring_red.png",
                 'position': (493, 77),  # Y-value decreased by 90
             },
             'V3': {
                 'proxy': QGraphicsProxyWidget(),
                 'button': self.V3_btn,
-                # 'icon': "Images/ring_red.png",
+                # 'icon': "images/ring_red.png",
                 'position': (519, 122),  # Y-value decreased by 90
             },
             'V4': {
                 'proxy': QGraphicsProxyWidget(),
                 'button': self.V4_btn,
-                # 'icon': "Images/ring_red.png",
+                # 'icon': "images/ring_red.png",
                 'position': (578, 122),  # Y-value decreased by 90
             },
             'V5': {
                 'proxy': QGraphicsProxyWidget(),
                 'button': self.V5_btn,
-                # 'icon': "Images/ring_red.png",
+                # 'icon': "images/ring_red.png",
                 'position': (602, 74),  # Y-value decreased by 90
             },
             'V6': {
                 'proxy': QGraphicsProxyWidget(),
                 'button': self.V6_btn,
-                # 'icon': "Images/ring_red.png",
+                # 'icon': "images/ring_red.png",
                 'position': (578, 29),  # Y-value decreased by 90
             },
             'Peristaltic Pump': {
                 'proxy': QGraphicsProxyWidget(),
                 'button': self.periPump,
-                # 'icon': "Images/peri p.gif",
+                # 'icon': "images/peri p.gif",
                 'style': "QPushButton {background-color: transparent; width: 100; height:100; border-radius: 50; color: transparent; } QPushButton:hover {background-color: transparent; width: 100; height:100; border: 6px solid lightblue; border-radius: 50; }",
                 'position': (302, 320),  # Y-value decreased by 90
             },

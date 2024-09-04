@@ -11,6 +11,7 @@ from collections import deque
 from resource_path import resource_path
 
 
+
 from PyQt5.QtWidgets import (
     QInputDialog, QApplication, QMainWindow, QListWidget, QDockWidget, QListWidgetItem, 
     QSplitter, QPushButton, QWidget, QLineEdit, QVBoxLayout, QHBoxLayout, QLabel, QFileDialog
@@ -251,9 +252,10 @@ class CodeEditor(QsciScintilla):
 
 # Main class
 class Editor(QMainWindow):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, main, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
+        self.main = main
         # Create a widget for the custom header
         header_widget = QWidget()
         header_widget.setMaximumSize(QSize(16777215, 30))
@@ -413,62 +415,70 @@ class Editor(QMainWindow):
     def load_text(self, file_path):
         # Path with file
         self.path = file_path
-        if self.path:
-            # Open the file
-            with open(file_path, 'r', newline='') as file:
-                code = file.read()
-        else: 
-            code = ""
-
-        # Extract the different parts of the code based on the functions
         try:
-            self.all_functions_content, func_name, start_of_functions, end_of_functions = parse_function_info(code, file_path)
-            code_with_variables = self.extract_lines_from_code(code, 0, start_of_functions - 3)
-            main_code = self.extract_lines_from_code(code, end_of_functions, -1).lstrip()
-        # Show syntax error in file 
-        except SyntaxError as e:
-            func_name = []
-            self.all_functions_content = []
-            code_with_variables = ""
-            main_code = code
+            if self.path:
+                # Open the file
+                with open(file_path, 'r', newline='') as file:
+                    code = file.read()
+        
+            else: 
+                code = ""
+        
 
-            # Extract the line number where the error occurred
-            error_line_number = e.lineno
-            print(f"SyntaxError on line {error_line_number}: {e.msg}")
-
-        # If the file does not follow the patterns of a Colifast method file, load all text into the main editor window
-        except:
-            func_name = []
-            self.all_functions_content = []
-            code_with_variables = ""
-            main_code = code
-            
-        # Clear the function list and content of the function editor if it has content
-        if self.function_list != None:
-            self.function_list.clear()
-            self.function_editor.set_text("")
-
-        # Set text for other editors
-        self.variable_editor.set_text(code_with_variables.lstrip().rstrip())
-        self.editor.set_text(main_code.lstrip().rstrip())
-        func_code_string = "".join(self.all_functions_content)
-        self.function_editor.set_text(func_code_string.lstrip().rstrip())
-
-        # Populate the function list
-        if func_name:
-            for elem in func_name:
-                self.function_list.addItem(elem)
-        else:
+            # Extract the different parts of the code based on the functions
             try:
-                self.highlight_line(error_line_number)
-                self.editor.SendScintilla(QsciScintilla.SCI_SETFIRSTVISIBLELINE, error_line_number-1)
-                from Colifast_ALARM_manager import ErrorDialog
-                error_message = f"You have some invalid syntax in your code, at line {error_line_number}"
-                dialog = ErrorDialog(error_message)
-                dialog.exec_()
+                self.all_functions_content, func_name, start_of_functions, end_of_functions = parse_function_info(code, file_path)
+                code_with_variables = self.extract_lines_from_code(code, 0, start_of_functions - 3)
+                main_code = self.extract_lines_from_code(code, end_of_functions, -1).lstrip()
+            # Show syntax error in file 
+            except SyntaxError as e:
+                func_name = []
+                self.all_functions_content = []
+                code_with_variables = ""
+                main_code = code
+
+                # Extract the line number where the error occurred
+                error_line_number = e.lineno
+                print(f"SyntaxError on line {error_line_number}: {e.msg}")
+
+            # If the file does not follow the patterns of a Colifast method file, load all text into the main editor window
             except:
-                pass
+                func_name = []
+                self.all_functions_content = []
+                code_with_variables = ""
+                main_code = code
                 
+            # Clear the function list and content of the function editor if it has content
+            if self.function_list != None:
+                self.function_list.clear()
+                self.function_editor.set_text("")
+
+            # Set text for other editors
+            self.variable_editor.set_text(code_with_variables.lstrip().rstrip())
+            self.editor.set_text(main_code.lstrip().rstrip())
+            func_code_string = "".join(self.all_functions_content)
+            self.function_editor.set_text(func_code_string.lstrip().rstrip())
+
+            # Populate the function list
+            if func_name:
+                for elem in func_name:
+                    self.function_list.addItem(elem)
+            else:
+                try:
+                    self.highlight_line(error_line_number)
+                    self.editor.SendScintilla(QsciScintilla.SCI_SETFIRSTVISIBLELINE, error_line_number-1)
+                    from Colifast_ALARM_manager import ErrorDialog
+                    error_message = f"You have some invalid syntax in your code, at line {error_line_number}"
+                    dialog = ErrorDialog(error_message)
+                    dialog.exec_()
+                except:
+                    pass
+        except:
+            from Colifast_ALARM_manager import ErrorDialog
+            error_message = f"The stored method file, {file_path}, could not be found"
+            dialog = ErrorDialog(error_message)  
+            dialog.exec_()
+
 
 
     # Highlight a specific line number
@@ -622,6 +632,14 @@ class Editor(QMainWindow):
             self.save_file(selected_file)
             print(selected_file)
             settings.storeMethod(selected_file)
+
+            # self.load_text(selected_file)
+            # self.main.methodDropDown()
+            self.main.methodSelector.addItem(selected_file)
+            self.main.methodSelector.setCurrentText(settings.getMethod())
+            # self.main.method_file_changer(0)
+            print(settings.getMethod())
+
         
 
     def extract_lines_from_code(self, code, start, stop):

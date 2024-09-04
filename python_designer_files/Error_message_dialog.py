@@ -99,7 +99,7 @@ class Ui_Dialog(object):
         self.label_11 = QtWidgets.QLabel(self.frame_5)
         self.label_11.setMinimumSize(QtCore.QSize(50, 5))
         self.label_11.setText("")
-        self.label_11.setPixmap(QtGui.QPixmap(":/images/Images/Colifast_50pix_medium.png"))
+        self.label_11.setPixmap(QtGui.QPixmap(":/images/images/Colifast_50pix_medium.png"))
         self.label_11.setScaledContents(False)
         self.label_11.setObjectName("label_11")
         self.horizontalLayout_7.addWidget(self.label_11, 0, QtCore.Qt.AlignHCenter)

@@ -100,7 +100,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../Images/ring_red.png</normaloff>../Images/ring_red.png</iconset>
+     <normaloff>../images/ring_red.png</normaloff>../images/ring_red.png</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -135,7 +135,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../Images/ring_red.png</normaloff>../Images/ring_red.png</iconset>
+     <normaloff>../images/ring_red.png</normaloff>../images/ring_red.png</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -170,7 +170,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../Images/ring_red.png</normaloff>../Images/ring_red.png</iconset>
+     <normaloff>../images/ring_red.png</normaloff>../images/ring_red.png</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -205,7 +205,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../Images/ring_red.png</normaloff>../Images/ring_red.png</iconset>
+     <normaloff>../images/ring_red.png</normaloff>../images/ring_red.png</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -240,7 +240,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../Images/ring_red.png</normaloff>../Images/ring_red.png</iconset>
+     <normaloff>../images/ring_red.png</normaloff>../images/ring_red.png</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -275,7 +275,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../Images/ring_red.png</normaloff>../Images/ring_red.png</iconset>
+     <normaloff>../images/ring_red.png</normaloff>../images/ring_red.png</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -310,7 +310,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../Images/ring_red.png</normaloff>../Images/ring_red.png</iconset>
+     <normaloff>../images/ring_red.png</normaloff>../images/ring_red.png</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -345,7 +345,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../Images/ring_red.png</normaloff>../Images/ring_red.png</iconset>
+     <normaloff>../images/ring_red.png</normaloff>../images/ring_red.png</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -380,7 +380,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../Images/ring_red.png</normaloff>../Images/ring_red.png</iconset>
+     <normaloff>../images/ring_red.png</normaloff>../images/ring_red.png</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -415,7 +415,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../Images/ring_red.png</normaloff>../Images/ring_red.png</iconset>
+     <normaloff>../images/ring_red.png</normaloff>../images/ring_red.png</iconset>
    </property>
    <property name="iconSize">
     <size>
@@ -450,7 +450,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../Images/ring_red.png</normaloff>../Images/ring_red.png</iconset>
+     <normaloff>../images/ring_red.png</normaloff>../images/ring_red.png</iconset>
    </property>
    <property name="iconSize">
     <size>

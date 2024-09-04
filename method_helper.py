@@ -7,7 +7,6 @@ import logging
 
 # Own imports
 from components.adu.adu import adu
-# from python_designer_files.ADUadv_generator import adu
 import components.xlp as xlp
 import components.sfm as sfm
 import components.mpv as mpv
@@ -104,6 +103,7 @@ def sfm_read(wavelength, store_data=True, nm_bandwidth = 1, readings_to_average_
 
 	if wavelength == 1:
 		time, data = sfm.sfm_read(wavelength, nm_bandwidth, readings_to_average_over)
+		# A full spectrum will store all the wavelengths in the database - this has not been fully tested and are sure to create lots of entries in the DB.
 		for wavelength, intensity in data:
 			db.store_data(series_id, sampleID, run_id, time, wavelength, intensity, nm_bandwidth, readings_to_average_over)
 			

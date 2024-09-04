@@ -154,7 +154,7 @@ QPushButton {
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="Icons.qrc">:/images/Images/Colifast_50pix_medium.png</pixmap>
+               <pixmap resource="Icons.qrc">:/images/images/Colifast_50pix_medium.png</pixmap>
               </property>
               <property name="scaledContents">
                <bool>false</bool>

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Colifast\source\repos\Stianein\Colifast_ALARM\Qt_files\Colifast_ALARM.ui'
+# Form implementation generated from reading ui file 'Qt_files\Colifast_ALARM.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -132,13 +132,17 @@ class Ui_MainWindow(object):
         self.classic_style.setObjectName("classic_style")
         self.horizontalLayout_17.addWidget(self.classic_style, 0, QtCore.Qt.AlignLeft)
         self.horizontalLayout_7.addWidget(self.frame_21, 0, QtCore.Qt.AlignHCenter)
-        self.label_11 = QtWidgets.QLabel(self.frame_5)
-        self.label_11.setMinimumSize(QtCore.QSize(50, 5))
-        self.label_11.setText("")
-        self.label_11.setPixmap(QtGui.QPixmap(":/images/Images/Colifast_50pix_medium.png"))
-        self.label_11.setScaledContents(False)
-        self.label_11.setObjectName("label_11")
-        self.horizontalLayout_7.addWidget(self.label_11)
+        self.label_5 = QtWidgets.QLabel(self.frame_5)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_5.sizePolicy().hasHeightForWidth())
+        self.label_5.setSizePolicy(sizePolicy)
+        self.label_5.setText("")
+        self.label_5.setPixmap(QtGui.QPixmap("Qt_files\\../images/Colifast_50pix_medium.png"))
+        self.label_5.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.label_5.setObjectName("label_5")
+        self.horizontalLayout_7.addWidget(self.label_5)
         self.horizontalLayout_4.addWidget(self.frame_5)
         self.frame_6 = QtWidgets.QFrame(self.headerContainer)
         self.frame_6.setMinimumSize(QtCore.QSize(0, 50))

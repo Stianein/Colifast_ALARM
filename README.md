@@ -31,13 +31,14 @@
 <br />
 <div align="center">
   <a href="https://www.colifast.no/">
-    <img src="Images/Colifast_50pix.png" alt="Logo" width="200" height="30">
+    <img src="images/Colifast_50pix.png" alt="Logo" width="200" height="30">
   </a>
 
 <h3 align="center">Software for Colifast ALARM</h3>
 
   <p align="center">
-    project_description
+    For the operation of a bacterial monitor - a growth based solution to metering feacal contamination in water.
+    <br>
     <br />
     <a href="https://github.com/Stianein/Colifast_ALARM"><strong>Explore the docs »</strong></a>
     <br />
@@ -83,13 +84,8 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-In this project I have developed software for the Colifast ALARM instrument. We sought to take more control of the whole of the equipement, which measures fecal indicator bacteria in water recipients, see our web page for more info on it´s usecases.
+ This project is designed to operate pumps and valves, heater element, light sources and spectrophotometer, etc. for metering fecal content of water sources. The software allows the user control over the components through a python-based file with extension ``.CFAST``. There are helper functions in the background that can be utilized from these files, which is described in the documentation, as well as the basic communication with the components.
 
-Colifast is as of 2024 a low budget company, and open source is thus a reasonable strategy for our software. But sharing the source code may have som benefits to us too, it could help us navigate customer needs, and github can be a platform to handle future priorities of development. Aside from that maybe this project could work as a starting point for people who whish to develope software to communicate with the same or similar components used in the Colifast ALARM system. 
-
-Off course I would be more than happy to have people participate on the development, to make the equipement even better, despite it being a commercially sold equipment, should they wish to. The software can be opened fine on a windows computer without the components connected, but it has not yet been time to make modules that simulate the function of the components. 
-
-The equipment is not cross platform, as it utilizes components that are windows only components. 
 
 `Stianein`, `Colifast_ALARM`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
 
@@ -156,8 +152,68 @@ Go to Anaconda's webpage to download https://www.anaconda.com/download
 
 <!-- USAGE EXAMPLES -->
 ## Usage
+The instrument is handled through method files that can be loaded in the GUI through the *Method Selection* found under **Method**. The method files are structured in three parts:
 
-Include some info from manual here...
+1. VARIABLES
+2. FUNCTIONS
+3. CODE TO BE EXECUTED
+
+It is basically *Python* code, but i have given the files the CFAST extension for fun. The code is loaded into the Editor part of the gui using *AST* parser, and will try to sort the code into three windows based on these three sections. The **method_helper** file runs the method file using the *exec* function, and also contains some aditional functions for streamlining the calls one can make from the method file. This however requires the import of the *method_helper* in your *method file* `from method_helper import *`
+
+### Variables
+
+Here we set some initial values, eg is values stored in the settings file of the system, a file that is updated through the GUI, and thus can "communicate" the selected user settings to the *method file* if collected here.
+
+```python
+turbidity_wavelength = settings.getWavelengthTurb()
+fluorescent_wavelength = settings.getWavelengthFluo()
+remaining_samples = settings.getRemaining()
+bottle_size = settings.getBottleSize()
+sample_source = settings.getSampleSource()
+```
+
+
+### Functions
+
+Here you can specify complex functions in order to keep the actual code nice and clean. Example of a functioin is the ``incubator_fill`` function that allow the user to fill the incubator chamber with the a fluid of a given volume, as the function thakes those parameters as arguments. 
+
+```python
+  # Function for washing cell #
+  def inkubator_fill(fluid, volume):
+    global status
+    global sample_source
+    status.emit(f"Flushing cell with {volume} ml of {fluid}")
+    mpv.liquid(fluid)
+    # Washes cell with 150 mL of water
+    pump_size_ml = int(int(settings.getPumpSize())/1000)
+    iterator = int(volume/pump_size_ml)
+    for i in range(iterator):
+      xlp.flowrate(400)
+      xlp.valve_out()
+      xlp.fill()
+      xlp.delay_until_done()
+      xlp.valve_in()
+      xlp.flowrate(500)
+      xlp.empty()
+      xlp.delay_until_done()
+  ```
+
+### Code to be executed
+
+Here the code to be conducted is written, the user can now, with the aforementioned function in place, call the *incubator_fill* function to rinse the chamber with 150 ml of acid from channel 4, by calling ``inkubator_fill(4, 150)``. The chamber could then be emptied by starting the peristaltic pump. It is a simple on/off relay switch that is controlled through the ADU port, 0. So calling ``adu.on(0)`` will turn on the pump. A delay, and then turning it off again is waranted for a propper emptying of the chamber, before the next piece of code. 
+
+Remember to consider the actual mechanical strain this code does to the equipement, and be sure to know the effect of the code. The syringe pump is for instance equiped with a *flowrate* function that can be set to minimize strain on channels that goes to suceptible parts. We usually use a flowrate of 400 ul/sec, that could be set with the following command, ``xlp.flowrate(400)``
+
+For more detailed descriptions of commands for the components and inherent functions from the ``method_helper`` file, see the [docs]().
+
+
+<h3 id="adu">ADU</h3>
+
+<img src="images\ADU_adv.png" alt="ADU_advanced" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
+
+<br>
+<br>
+
 Documentation page link?
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -224,7 +280,7 @@ Project Link: [https://github.com/Stianein/Colifast_ALARM](https://github.com/St
 ## Acknowledgments
 
 * This project started as a bachelor project for students at the University of Oslo a special thanks to Julie Knapstad, Jon Sebastian Kaupang and Are Pettersen for their contributions.
-* This Readme was made using [![this][readme-template]] readme template, by [![othneildrew][readme-creator]].
+* This Readme was made using [this](https://github.com/othneildrew/Best-README-Template/blob/main/BLANK_README.md) readme template, by [othneildrew](https://github.com/othneildrew/).
 * Lexilla
 
 

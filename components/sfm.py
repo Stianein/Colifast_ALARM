@@ -154,7 +154,7 @@ def sfm_read(wavelength, nm_bandwidth='1', readings_to_average_over='3'):
 				counter += 1
 			else:
 				if counter > 0:
-					# Devide sum by counter for the resulting average 
+					# Divide sum by counter for the resulting average 
 					avg = summing_up/counter
 					data_point = [wavelength, round(avg, 2)]
 					return timestamp, data_point[1]
