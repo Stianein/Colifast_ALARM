@@ -40,7 +40,7 @@
     For the operation of a bacterial monitor - a growth based solution to metering feacal contamination in water.
     <br>
     <br />
-    <a href="https://github.com/Stianein/Colifast_ALARM"><strong>Explore the docs »</strong></a>
+    <a href="project_description"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/Stianein/Colifast_ALARM">View Demo</a>
@@ -204,17 +204,13 @@ Here the code to be conducted is written, the user can now, with the aforementio
 
 Remember to consider the actual mechanical strain this code does to the equipement, and be sure to know the effect of the code. The syringe pump is for instance equiped with a *flowrate* function that can be set to minimize strain on channels that goes to suceptible parts. We usually use a flowrate of 400 ul/sec, that could be set with the following command, ``xlp.flowrate(400)``
 
-For more detailed descriptions of commands for the components and inherent functions from the ``method_helper`` file, see the [docs]().
+For more detailed descriptions of commands for the components and inherent functions from the ``method_helper`` file, see the [docs](project_description).
 
 
-<h3 id="adu">ADU</h3>
 
-<img src="images\ADU_adv.png" alt="ADU_advanced" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
+## Demo
 
-<br>
-<br>
-
-Documentation page link?
+For a demo check out the [manual](https://github.com/Stianein/Colifast_ALARM/blob/main/Manual.md)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
