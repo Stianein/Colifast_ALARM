@@ -1,39 +1,3 @@
-<style>
-body {
-    font-family: 'Calibri', sans-serif;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-th, td {
-    padding: 8px;
-    text-align: left;
-    border: 1px solid #ddd;
-}
-th {
-    background-color: #f4f4f4;
-}
-.enlargeable {
-  cursor: pointer;
-  transition: transform 0.3s ease;
-  position: relative;
-  float: right;
-    margin-left: 15px; 
-    margin-right: 15px; 
-    margin-bottom: 15px;
-    margin-top: 15px;
-}
-
-.enlargeable:hover {
-  transform: scale(2.5); /* Adjust the scale as needed */
-  transform-origin: right;
-  z-index: 100;
-}
-
-</style>
-
 <!-- TABLE OF CONTENTS -->
 <h1 id="table-of-contents">Table of Contents</h1>
 
