@@ -43,7 +43,7 @@
     <a href="project_description"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/Stianein/Colifast_ALARM">View Demo</a>
+    <a href="https://github.com/Stianein/Colifast_ALARM/blob/main/Manual.md">View Demo</a>
     ·
     <a href="https://github.com/Stianein/Colifast_ALARM/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·

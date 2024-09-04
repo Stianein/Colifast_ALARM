@@ -76,7 +76,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 2. **Method Selection:**
 
-    <img src="images\method_selection.png" alt="method_selection" class="enlargeable" width="250">
+    <img src=".\images\method_selection.png" alt="method_selection" class="enlargeable" width="250">
 
    - Navigate to the **Method** section.
    - From the **Method File** drop-down menu, select the file you want the program to run.
