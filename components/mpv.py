@@ -1,4 +1,4 @@
-##### MODULE: VICI actuator for multiposition valves   ####
+##### MODULE: Actuator for multiposition valves   ####
 ##### Author: Stian Ingebrigtsen - and Julie Knapstad & Jon Sebastian Kaupang   ####
 
 """ To run this module, run your IDE as administrator"""
@@ -59,18 +59,8 @@ def liquid(position):
     if settings.getstopSignal():
         raise SystemExit("Stoping program mpv")
 
-    positions = ["waste", "na_thisul", "sample2", "acid", "sample1", "media"]
-
-    # Convert number to its name in liquid list(positions)
-    if isinstance(position, int):
-        # remove 1 to align with python 0-indexing - this is so the position sendt as argument, correspond to the valve enumeration of the MPV
-        position = position - 1
-        position = positions[position]
-    
-    # Get index of liquid(position) and add 1 to accomodate for the python 0-indexing
-    pos = positions.index(position) + 1
-    pos = str(pos)
-    log.info(f"moving to position {pos}, {position}" )
+    pos = str(position)
+    log.info(f"moving to position {pos}")
     
     # Send command
     if pos:

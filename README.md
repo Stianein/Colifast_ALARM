@@ -40,7 +40,7 @@
     For the operation of a bacterial monitor - a growth based solution to metering feacal contamination in water.
     <br>
     <br />
-    <a href="https://github.com/Stianein/Colifast_ALARM/blob/main/docs/index.md"><strong>Explore the docs »</strong></a>
+    <a href=" https://stianein.github.io/Colifast_ALARM/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/Stianein/Colifast_ALARM/blob/main/Manual.md">View Demo</a>
@@ -87,7 +87,6 @@
  This project is designed to operate pumps and valves, heater element, light sources and spectrophotometer, etc. for metering fecal content of water sources. The software allows the user control over the components through a python-based file with extension ``.CFAST``. There are helper functions in the background that can be utilized from these files, which is described in the documentation, as well as the basic communication with the components.
 
 
-`Stianein`, `Colifast_ALARM`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -144,8 +143,6 @@ Go to Anaconda's webpage to download https://www.anaconda.com/download
    ```
 4. Set up the pyseabreeze drivers – by running the run_seabreeze_setup.bat file.
 
-5. Make sure to include the dll´s in the right folders. Pump and ADU – figure out how i did this myself.
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -184,7 +181,7 @@ Here you can specify complex functions in order to keep the actual code nice and
     global sample_source
     status.emit(f"Flushing cell with {volume} ml of {fluid}")
     mpv.liquid(fluid)
-    # Washes cell with 150 mL of water
+    # Washes cell with "volume" ml of water - only divisible with pumpsize volumes, as it make use of the fill function. If more fine grained volumes should be handled this must be rewritten.
     pump_size_ml = int(int(settings.getPumpSize())/1000)
     iterator = int(volume/pump_size_ml)
     for i in range(iterator):
@@ -200,11 +197,21 @@ Here you can specify complex functions in order to keep the actual code nice and
 
 ### Code to be executed
 
-Here the code to be conducted is written, the user can now, with the aforementioned function in place, call the *incubator_fill* function to rinse the chamber with 150 ml of acid from channel 4, by calling ``inkubator_fill(4, 150)``. The chamber could then be emptied by starting the peristaltic pump. It is a simple on/off relay switch that is controlled through the ADU port, 0. So calling ``adu.on(0)`` will turn on the pump. A delay, and then turning it off again is waranted for a propper emptying of the chamber, before the next piece of code. 
+Here the code to be conducted is written, the user can now, with the aforementioned function in place, call the *incubator_fill* function to rinse the chamber with 150 ml of acid from channel 4, by calling ``inkubator_fill(4, 150)``. The chamber could then be emptied by starting the peristaltic pump. It is a simple on/off relay switch that is controlled through the ADU port, 0. So calling ``adu.on(0)`` will turn on the pump. A delay, and then turning it off again is waranted for a propper emptying of the chamber, before the next piece of code, lets say filling the chamber with 100 ml of water sample.
 
-Remember to consider the actual mechanical strain this code does to the equipement, and be sure to know the effect of the code. The syringe pump is for instance equiped with a *flowrate* function that can be set to minimize strain on channels that goes to suceptible parts. We usually use a flowrate of 400 ul/sec, that could be set with the following command, ``xlp.flowrate(400)``
+The code to be executed would then be:
 
-For more detailed descriptions of commands for the components and inherent functions from the ``method_helper`` file, see the [docs](https://github.com/Stianein/Colifast_ALARM/blob/main/docs/index.md).
+```python
+inkubator_fill(4, 150)
+adu.on(0)
+delay(150) # This parameter is dependent on the peristaltic pump speed but 2:30 min should drain the chamber of the most recent Colifast ALARMs
+adu.off(0)
+inkubator_fill(5, 100)
+```
+
+Remember to consider the actual mechanical strain this code does to the equipement, and be sure to know the effect of the code. The syringe pump is for instance equiped with a *flowrate* function that can be set to minimize strain on channels that goes to suceptible parts. We usually use a *flowrate of 400 ul/sec*, that could be set with the following command, ``xlp.flowrate(400)``. As you can see from the function example a *flowrate of 500* is set for dispensing the volume into the inkubator chamber, as this is a large chamber with low pressure, compared to the tubing, we can allow a little faster flowrate.
+
+For more detailed descriptions of commands for the components and inherent functions from the ``method_helper`` file, see the [docs]( https://stianein.github.io/Colifast_ALARM/).
 
 
 
@@ -264,7 +271,7 @@ Distributed under the GPL License. See `LICENSE.txt` for more information.
 
 Stian Ingebrigtsen - si@colifast.no
 
-![Colifast home page][Colifast]
+[Colifast home page](https://www.colifast.no)
 
 Project Link: [https://github.com/Stianein/Colifast_ALARM](https://github.com/Stianein/Colifast_ALARM)
 
@@ -318,7 +325,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 [license-shield]: https://img.shields.io/github/license/Stianein/Colifast_ALARM.svg?style=for-the-badge
 [license-url]: https://github.com/Stianein/Colifast_ALARM/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
+[linkedin-url]: https://www.linkedin.com/company/10616216/admin/dashboard/
 
 [readme-template]: https://github.com/othneildrew/Best-README-Template/blob/main/BLANK_README.md
 [readme-creator]: https://github.com/othneildrew/

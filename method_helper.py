@@ -167,12 +167,13 @@ def delay(seconds):
 
 ### Variables to strings that enables the removal of quots, "", in the method file as an aestetic feature ###
 # mpv positions
-waste = "waste"
-nats = "na_thisul"
-extsamp = "sample2"
-acid = "acid"
-sample = "sample1"
-media = "media"
+waste = 1
+extsamp = 2
+nats = 3
+acid = 4
+sample = 5
+media = 6
+
 water = "water"
 
 # Variables for error messages

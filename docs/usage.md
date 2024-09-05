@@ -40,28 +40,23 @@ There are four main functions that are meant to be called from outside this clas
 <table>
     <tr>
         <th>Function</th>
-        <th>Use</th>
         <th>Args</th>
     </tr>
     <tr>
-        <td>on</td>
-        <td>adu.on(relay)</td>
-        <td>where relay is an integer 0-7.</td>
+        <td><strong>adu.on(relay)</strong></td>
+        <td>Turns <strong>on</strong> the a relay, where relay is an integer 0-7.</td>
     </tr>
     <tr>
-        <td>off</td>
-        <td>adu.off(relay)</td>
-        <td>where relay is an integer 0-7.</td>
+        <td><strong>adu.off(relay)</strong></td>
+        <td>Turns <strong>off</strong> a relay, where relay is an integer 0-7.</td>
     </tr>
     <tr>
-        <td>read</td>
-        <td>adu.read("RPA0")</td>
-        <td>"RP" + channel, channels: K0-K7/(relays) or A0-A2(readable)</td>
+        <td><strong>adu.read("RPA0")</strong></td>
+        <td>Sends a <strong>read</strong> command to a channel, "RP" + channel, channels: K0-K7/(relays) or A0-A2(readable)</td>
     </tr>
     <tr>
-        <td>write</td>
-        <td>adu.write("SK0")</td>
-        <td>"R" or "S + channel, channels: K0-K7</td>
+        <td><strong>adu.write("SK0")</strong></td>
+        <td>Sends a <strong>write</strong> command to a channel, "R" or "S + channel, channels: K0-K7</td>
     </tr>
 </table>
 
@@ -91,7 +86,7 @@ The sfm.py file has a **sfm_read** function to get time stamp and the data red, 
 sfm.sfm_read(wavelength, store_data=True, nm_bandwidth = 1, readings_to_average_over=None, series_id=1)
 ```
 
-<table>
+<table  style="border-collapse: collapse; width: 100%;">
   <thead>
     <tr>
       <th>Argument</th>
@@ -134,12 +129,12 @@ sfm.sfm_read(wavelength, store_data=True, nm_bandwidth = 1, readings_to_average_
 
 <!-- <img src="..\images\liquid_handling.png" alt="spectrometer" class="enlargeable" width="350"> -->
 
-The **XLP6000 syringe pump** is initialized with the COM port set in the GUI, but a port can also be specified as an argument.
+The **XLP syringe pump** is initialized with the COM port set in the GUI, but a port can also be specified as an argument.
 
 ```python
 xlp.initialize(COMport)
 ```
-Here are a table of other functions that control the syringe pump:
+The following table shows other functions that control the syringe pump:
 
 <table>
   <thead>
@@ -150,42 +145,43 @@ Here are a table of other functions that control the syringe pump:
   </thead>
   <tbody>
     <tr>
-      <td><strong>aspirate(volume)</strong></td>
+      <td><strong>xlp.aspirate(volume)</strong></td>
       <td>Asks the pump to aspirate a specified volume. <br> <strong>volume</strong>: The amount of liquid to aspirate, in milliliters.</td>
     </tr>
     <tr>
-      <td><strong>fill()</strong></td>
-      <td>Fills the syringe to its maximum capacity.</td>
+      <td><strong>xlp.fill()</strong></td>
+      <td><strong>Fills</strong> the syringe to its maximum capacity.</td>
     </tr>
     <tr>
-      <td><strong>dispense(volume)</strong></td>
+      <td><strong>xlp.dispense(volume)</strong></td>
       <td>Dispenses a specified volume of liquid from the syringe. <br> <strong>volume</strong>: The amount of liquid to dispense, in milliliters.</td>
     </tr>
     <tr>
-      <td><strong>empty()</strong></td>
-      <td>Empties the syringe completely.</td>
+      <td><strong>xlp.empty()</strong></td>
+      <td><strong>Empties</strong> the syringe completely.</td>
     </tr>
     <tr>
-      <td><strong>valve_out()</strong></td>
-      <td>Switches the valve head to the out position.</td>
+      <td><strong>xlp.valve_out()</strong></td>
+      <td>Switches the valve head to the <strong>out position</strong>.</td>
     </tr>
     <tr>
-      <td><strong>valve_in()</strong></td>
-      <td>Switches the valve head to the in position.</td>
+      <td><strong>xlp.valve_in()</strong></td>
+      <td>Switches the valve head to the <strong>in position</strong>.</td>
     </tr>
     <tr>
-      <td><strong>flowrate(rate)</strong></td>
+      <td><strong>xlp.flowrate(rate)</strong></td>
       <td>Sets the flow rate of the pump. <br> <strong>rate</strong>: The flow rate in microliters per second.</td>
     </tr>
     <tr>
-      <td><strong>delay_until_done()</strong></td>
+      <td><strong>xlp.delay_until_done()</strong></td>
       <td>Delays the operation until the pump has completed its current action.</td>
     </tr>
   </tbody>
 </table>
-
+<br>
 In adition there are these query functions to check the valve and plunger position.
-
+<br>
+<br>
 <table>
   <thead>
     <tr>
@@ -195,11 +191,11 @@ In adition there are these query functions to check the valve and plunger positi
   </thead>
   <tbody>
     <tr>
-      <td><strong>valve_position()</strong></td>
+      <td><strong>xlp.valve_position()</strong></td>
       <td>Queries and returns the current valve position. The returned value is 'o' for out (to the MPV) or 'i' for in (to the incubator chamber).</td>
     </tr>
     <tr>
-      <td><strong>pump_position()</strong></td>
+      <td><strong>xlp.pump_position()</strong></td>
       <td>Returns the current volume position of the syringe plunger based on the pump size.</td>
     </tr>
   </tbody>
@@ -226,39 +222,17 @@ There is only one function for this component as it is simply used to switch the
 mpv.liquid(channel)
 ```
 
-The argument, *channel*, ensures the valve shifts to that channel, and the syringe will thus aspirate/dispense liquid from there, given that the syringe valve is turned in the out direction towards the MPV. It is here important to know which connections are not to be dispensed large volumes to (eg. medium) and which are not to be asprated from (eg. waste). Find our standard setup in the table, the argument can be index or value in the following list: ["waste", "na_thisul", "sample2", "acid", "sample1", "media"]
+The argument, *channel*, ensures the valve shifts to that channel, and the syringe will thus aspirate/dispense liquid from there, given that the syringe valve is turned in the out direction towards the MPV. It is here important to know which connections are not to be dispensed large volumes to (eg. medium) and which are not to be asprated from (eg. waste). Find our standard setup in the table, the argument can be either **channel** or the port **variable** as that is declared in ``method_helper.py`` for the ability to make a nice and readable method file:
 
-<br>
-    <table>
-    <tr>
-        <th>Channel</th>
-        <th>Description</th>
-    </tr>
-    <tr>
-        <td>1</td>
-        <td>Waste</td>
-    </tr>
-    <tr>
-        <td>2</td>
-        <td>Sample Out/External Sample</td>
-    </tr>
-    <tr>
-        <td>3</td>
-        <td>Reagent B (Sodium Thiosulfate)</td>
-    </tr>
-    <tr>
-        <td>4</td>
-        <td>Acid</td>
-    </tr>
-    <tr>
-        <td>5</td>
-        <td>Sample</td>
-    </tr>
-    <tr>
-        <td>6</td>
-        <td>Medium</td>
-    </tr>
-    </table>
+| Channel | Variable | Description                                          |
+|---------|----------|------------------------------------------------------|
+| 1       | waste    | Dispense to Waste                                    |
+| 2       | extsamp  | Sample Out/External Sample                           |
+| 3       | nats     | Reagent B (Sodium Thiosulfate for "dechlorination")  |
+| 4       | acid     | Acid rinse solution                                  |
+| 5       | sample   | Sample line for water source                         |
+| 6       | media    | Growth medium                                        |
+
 
 
 <h2 id="helper-functions">Helper functions</h2>
