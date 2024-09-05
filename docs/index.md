@@ -1,5 +1,7 @@
 # Software for Colifast ALARM
 
+Project Link: [Colifast ALARM repository](https://github.com/Stianein/Colifast_ALARM)
+
 Welcome to the **Colifast ALARM software** documentation! This project is designed to operate pumps and valves, heater element, light sources, relay box, and spectrophotometer for metering fecal content of water sources. The software allows the user control over the components through a python-based file with extension ``.CFAST``. There are helper functions in the background that can be utilized from these files, which is described in this documentation, as well as the basic communication with the components.
 
 ## Table of Contents
@@ -86,7 +88,7 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+[Back to Top](#software-for-colifast-alarm)
 
 ### Top contributors:
 
