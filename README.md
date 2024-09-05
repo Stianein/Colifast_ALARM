@@ -40,7 +40,7 @@
     For the operation of a bacterial monitor - a growth based solution to metering feacal contamination in water.
     <br>
     <br />
-    <a href=" https://stianein.github.io/Colifast_ALARM/"><strong>Explore the docs »</strong></a>
+    <a href="https://stianein.github.io/Colifast_ALARM/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/Stianein/Colifast_ALARM/blob/main/Manual.md">View Demo</a>
@@ -211,7 +211,7 @@ inkubator_fill(5, 100)
 
 Remember to consider the actual mechanical strain this code does to the equipement, and be sure to know the effect of the code. The syringe pump is for instance equiped with a *flowrate* function that can be set to minimize strain on channels that goes to suceptible parts. We usually use a *flowrate of 400 ul/sec*, that could be set with the following command, ``xlp.flowrate(400)``. As you can see from the function example a *flowrate of 500* is set for dispensing the volume into the inkubator chamber, as this is a large chamber with low pressure, compared to the tubing, we can allow a little faster flowrate.
 
-For more detailed descriptions of commands for the components and inherent functions from the ``method_helper`` file, see the [docs]( https://stianein.github.io/Colifast_ALARM/).
+For more detailed descriptions of commands for the components and inherent functions from the ``method_helper`` file, see the [docs](https://stianein.github.io/Colifast_ALARM/).
 
 
 
