@@ -51,6 +51,9 @@ th {
 - [Tips](#tips)
 
 
+Project Link: [Colifast ALARM source code](https://github.com/Stianein/Colifast_ALARM)
+
+
 <h1 id="introduction">Introduction</h1>
 
 This software is intended to operate the Colifast ALARM Instrument with its components. Method files can be loaded to run different setups, and you can create files to conduct specific tasks utilizing the components in a customized manner.
