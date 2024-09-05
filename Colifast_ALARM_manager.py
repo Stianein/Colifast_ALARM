@@ -382,7 +382,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.md = MarkdownIt()
 
         # Convert markdown to html
-        html_content = self.convert_markdown_to_html(os.path.join(path, "Manual.md"))
+        html_content = self.convert_markdown_to_html(os.path.join(path, "docs\manual.md"))
         print(html_content)
 
         # Load the HTML into the QTextBrowser from the designer file

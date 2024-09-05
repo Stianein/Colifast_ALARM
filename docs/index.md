@@ -7,6 +7,7 @@ Welcome to the **Colifast ALARM software** documentation! This project is design
 ## Table of Contents
 - [Installation](installation.md)
 - [Usage](usage.md)
+- [Manual](manual.md)
 - [Contributing](#contributing)
 
 ## Overview
