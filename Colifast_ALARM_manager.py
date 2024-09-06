@@ -43,6 +43,7 @@ import numpy as np
 from apscheduler.schedulers.background import BackgroundScheduler
 from collections import deque
 from resource_path import resource_path
+import traceback
 
 # COMPONENT IMPORTS #
 import settings
@@ -60,8 +61,6 @@ from python_designer_files.LogIn import Ui_Dialog as Ui_login
 from python_designer_files.Error_message_dialog import Ui_Dialog as Ui_ErrorDialog
 import python_designer_files.clock_time_picker as time_pckr
 import python_designer_files.editor as editor
-
-os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-gpu"
 
 
 # Get the directory of the current file
@@ -578,9 +577,9 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # For scheduler
         self.future_samples = []
         # Store relevant data for each run as well as adding the strating point for future runs to the scheduler
-        for i in range(samples):
+        for i in range(0, samples*5, 5):
             # Calculate the next run
-            self.future_samples.append(start_time + datetime.timedelta(days=i*interval))
+            self.future_samples.append(start_time + datetime.timedelta(seconds=i*interval))
 
     # Function collect data, and handle continuation of scheduled runs when
     # a sample is finished and handle icon change when run has finished
@@ -609,6 +608,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
             if self.dualSamples.checkState():
                 self.update_dual_samples()
 
+            self.log.info(f"sample_nmb: {sample_number} settings: {settings.getSamplesNr()} Settings remain: {settings.getRemaining()}")
             # THE LAST SAMPLE HAS FINISHED #
             if sample_number >= settings.getSamplesNr() or settings.getRemaining() <= 0:
                 print("sample_nmb: ", sample_number, "settings: ", settings.getSamplesNr(), "Settings remain: ", settings.getRemaining())
@@ -663,12 +663,19 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                             pass
                     # ADD the next job to the scheduler - this way the only info about futur run is kept in future_samples list,
                     # and can thus be modified here, before it is added to the scheduler(mobstart or other features for start/stop)
+                    print("Future samples: ", self.future_samples)
+                    self.log.info(f"Future samples: {self.future_samples}")
                     self.scheduler.add_job(self.start_new_sample, 'date', run_date=self.future_samples[0], misfire_grace_time=30)
+                    print("scheduler has done its job")
+                    self.log.info("scheduler has done its job")
                     next_sample = self.datetimestringler(self.future_samples[0])
                     # Update next sample in status browser
                     string = f"Delay next sample, {next_sample}"
                     self.setStatus(string)
-        except:
+
+        except Exception as e:
+            self.log.error("An unexpected error occurred while scheduling a job.")
+            self.log.error(traceback.format_exc())
             print("The finish run function stalled, you might be running a calibration method, or other service methods?")
         return
 
@@ -1577,6 +1584,13 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     ## Option & Choices functions ##
     # Bottle Size changed funciton #
     def bottle_changer(self, accept):
+        if not self.startNewMethod.isChecked():
+            self.startNewMethod.setChecked(False)
+            method_running = ErrorDialog("There is a method running, please stop the run before updating the bottle size")
+            accept = method_running.exec_()
+            if accept:
+                return
+            
         bottle_size = self.bottleSize.value()
         settings.storeSamplesNr(bottle_size)
         settings.storeBottleSize(bottle_size)

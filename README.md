@@ -43,7 +43,7 @@
     <a href="https://stianein.github.io/Colifast_ALARM/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/Stianein/Colifast_ALARM/blob/main/Manual.md">View Demo</a>
+    <a href="https://stianein.github.io/Colifast_ALARM/manual.html">View Demo</a>
     ·
     <a href="https://github.com/Stianein/Colifast_ALARM/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
@@ -217,7 +217,7 @@ For more detailed descriptions of commands for the components and inherent funct
 
 ## Demo
 
-For a demo check out the [manual](https://github.com/Stianein/Colifast_ALARM/blob/main/Manual.md)
+For a demo check out the [manual](https://stianein.github.io/Colifast_ALARM/manual.html)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
