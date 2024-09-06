@@ -546,8 +546,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         :param start_time: Delay time for when the first scheduled sample is to be started.
         :type start_time: datetime.datetime
         """
-        print("IN sample_scheduler!!! samples=setti...,  samp, remain; ", samples, settings.getSamplesNr(), settings.getRemaining())
-        
+               
         # Update samples if it is not passed as argument
         if samples == None:
             samples=settings.getSamplesNr()
@@ -584,9 +583,9 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # For scheduler
         self.future_samples = []
         # Store relevant data for each run as well as adding the strating point for future runs to the scheduler
-        for i in range(0, samples*5, 5):
+        for i in range(samples):
             # Calculate the next run
-            self.future_samples.append(start_time + datetime.timedelta(seconds=i*interval))
+            self.future_samples.append(start_time + datetime.timedelta(days=i*interval))
 
     # Function collect data, and handle continuation of scheduled runs when
     # a sample is finished and handle icon change when run has finished
@@ -671,11 +670,14 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                             pass
                     # ADD the next job to the scheduler - this way the only info about futur run is kept in future_samples list,
                     # and can thus be modified here, before it is added to the scheduler(mobstart or other features for start/stop)
-                    print("Future samples: ", self.future_samples, "LEngth: ", len(self.future_samples))
+                    
+                    # TESTING
                     self.log.info(f"Future samples: {self.future_samples} LEngth: {len(self.future_samples)}")
+
                     self.scheduler.add_job(self.start_new_sample, 'date', run_date=self.future_samples[0], misfire_grace_time=30)
-                    print("scheduler has done its job")
+                    # TESTING
                     self.log.info("scheduler has done its job")
+
                     next_sample = self.datetimestringler(self.future_samples[0])
                     # Update next sample in status browser
                     string = f"Delay next sample, {next_sample}"
