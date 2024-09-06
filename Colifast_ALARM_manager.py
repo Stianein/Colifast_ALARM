@@ -550,6 +550,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Update samples if it is not passed as argument
         if samples == None:
             samples=settings.getSamplesNr()
+            
         # Log and Data handling
         if not self.database_and_logging_run(start_time, samples):
             settings.setstopSignal(1)
