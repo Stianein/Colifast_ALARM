@@ -229,8 +229,8 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 - Click on the **valve head** to change port, the tooltip shows which port it will change to upon clicking, which is then the oposite of the current port.
 - The **Empty** button will make the plunger of the syringe pump go to the very top of the pump, therby emptying it. 
 - The **Fill** button will draw the plunger of the syringe to the lower most position therby filling it completely (25 ml).
-- The **up-arrow**  <img src="icons\chevron-up.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;"> will allow you to dispense the volume set in **Syringe Volume (&#956;l)** at the set **Flowrate (&#956;l/s)**.
-- The **down-arrow**  <img src="icons\chevron-down.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;"> will allow you to aspirate the volume set in **Syringe Volume (&#956;l)** at the set **Flowrate (&#956;l/s)**.
+- The **up-arrow**  <img src="..\icons\chevron-up.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;"> will allow you to dispense the volume set in **Syringe Volume (&#956;l)** at the set **Flowrate (&#956;l/s)**.
+- The **down-arrow**  <img src="..\icons\chevron-down.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;"> will allow you to aspirate the volume set in **Syringe Volume (&#956;l)** at the set **Flowrate (&#956;l/s)**.
 
 COM ports are external connections to computers, that once connected, works almost as integrel parts of the computer. The are therefor often very stable once set up, but if there is some error to the connection they will not propperly reset before the system has undergone a rebooting. That is why we often recommend a reboot when the system has trouble connecting to the syringe pump.
 
@@ -285,8 +285,7 @@ COM ports are external connections to computers, that once connected, works almo
 [Back to ToC](#table-of-contents)
 
 - Stopping
-    - The **Stop Button**  <img src="icons\square.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;">
-  will abort the program imediately, only stalling if a component are midway through an operation. But if you wish to stop the run after the current sample has ended, right click the button and select **stop run after current sample has ended**.
+    - The **Stop Button**  <img src="..\icons\square.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;"> will abort the program imediately, only stalling if a component are midway through an operation. But if you wish to stop the run after the current sample has ended, right click the button and select **stop run after current sample has ended**.
 
 ---
 

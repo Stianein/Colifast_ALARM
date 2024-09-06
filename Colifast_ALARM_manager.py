@@ -493,10 +493,12 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         if not self.startNewMethod.isChecked():
             # Update status browser
             self.setStatus("The run is stopping after current run")
+            if self.startNewMethod.isChecked():
+                self.stop_updater()
             # Set the stop after current variable to true
             self.stop_after_current_sample = True
         else:
-            self.setStatus("Future runs have been deleted, run was ended")
+            self.setStatus("Future runs have been aborted, run was ended")
         # Update the call_Start variable
         self.call_start = False
         # Remove futur runs, and restart scheduler for next run
@@ -536,7 +538,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
 
     ## Scheduler preset functions ##
-    def sample_scheduler(self, samples=settings.getSamplesNr(), start_time=None):
+    def sample_scheduler(self, samples=None, start_time=None):
         """Starts the scheduler for running samples
         
         :param samples: Amount of samples the program shall run.
@@ -544,6 +546,11 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         :param start_time: Delay time for when the first scheduled sample is to be started.
         :type start_time: datetime.datetime
         """
+        print("IN sample_scheduler!!! samples=setti...,  samp, remain; ", samples, settings.getSamplesNr(), settings.getRemaining())
+        
+        # Update samples if it is not passed as argument
+        if samples == None:
+            samples=settings.getSamplesNr()
         # Log and Data handling
         if not self.database_and_logging_run(start_time, samples):
             settings.setstopSignal(1)
@@ -587,6 +594,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # In case the method is not meant to create datapoints in the database, 
         # this try/except wrapping makes the program ignore all the lacking data values.
         try:
+            print("IN Finished_run!!!  samp, remain; ", settings.getSamplesNr(), settings.getRemaining())
             # Get data from sample id
             db  = DatabaseHandler()
             data = db.fetch_data("SELECT sample_start_time, sample_number FROM SampleInfo WHERE id = ?", self.sample_id)
@@ -663,8 +671,8 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                             pass
                     # ADD the next job to the scheduler - this way the only info about futur run is kept in future_samples list,
                     # and can thus be modified here, before it is added to the scheduler(mobstart or other features for start/stop)
-                    print("Future samples: ", self.future_samples)
-                    self.log.info(f"Future samples: {self.future_samples}")
+                    print("Future samples: ", self.future_samples, "LEngth: ", len(self.future_samples))
+                    self.log.info(f"Future samples: {self.future_samples} LEngth: {len(self.future_samples)}")
                     self.scheduler.add_job(self.start_new_sample, 'date', run_date=self.future_samples[0], misfire_grace_time=30)
                     print("scheduler has done its job")
                     self.log.info("scheduler has done its job")
@@ -1592,11 +1600,15 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 return
             
         bottle_size = self.bottleSize.value()
+        print("bot, samp, remain; ", bottle_size, settings.getSamplesNr(), settings.getRemaining())
         settings.storeSamplesNr(bottle_size)
         settings.storeBottleSize(bottle_size)
         self.dayScheduler.setValue(settings.getSamplesNr())
         settings.storeRemaining(bottle_size)
         self.update_medium_progress_bar(True)
+
+        print("IN Bottle Changer!! bot, samp, remain; ", bottle_size, settings.getSamplesNr(), settings.getRemaining())
+
 
         # Start the remote GSM listner if a new bottle is inserted and mobile remote toggle is checked
         if settings.getRemoteStart():
