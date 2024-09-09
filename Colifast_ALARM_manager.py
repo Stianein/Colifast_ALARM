@@ -550,7 +550,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Update samples if it is not passed as argument
         if samples == None:
             samples=settings.getSamplesNr()
-            
+
         # Log and Data handling
         if not self.database_and_logging_run(start_time, samples):
             settings.setstopSignal(1)
@@ -1115,7 +1115,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         """.format(self.background, self.color, self.foreground))
 
         # Load style sheet from a file
-        style_file = QFile(resource_path(os.path.join(path, "Styles\\style.css")))
+        style_file = QFile(resource_path(os.path.join(path, "styles\\style.css")))
 
         if style_file.open(QFile.ReadOnly | QFile.Text):
             stream = QTextStream(style_file)

@@ -54,7 +54,6 @@ QToolTip {
     color: PLACEHOLDER_TEXT_COLOR;
 }
 
-
 /* Non-color design */
 #leftContainer, #QPushButton{
     text-align: left;
