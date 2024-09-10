@@ -57,7 +57,9 @@ Project Link: [Colifast ALARM source code](https://github.com/Stianein/Colifast_
 <h1 id="introduction">Introduction</h1>
 
 This software is intended to operate the Colifast ALARM Instrument with its components. Method files can be loaded to run different setups, and you can create files to conduct specific tasks utilizing the components in a customized manner.
-[ColifastALARM](link-to-picture-of-CALARM-with-new-software)
+
+<img src="..\images\Colifast_ALARM.png" alt="Colifast ALARM Instrument" width="500">
+
 
 ---
 
@@ -142,7 +144,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 [Back to ToC](#table-of-contents)
 
-<img src="..\images\report.png" alt="history menu" class="enlargeable" width="200" style="float: right; margin-right: 40px;">
+<img src="..\images\report.png" alt="Report menu" class="enlargeable" width="200" style="float: right; margin-right: 40px;">
 <br>
 <br>
 
@@ -170,7 +172,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 [Back to ToC](#table-of-contents)
 
-<img src="..\images\ADU_adv.png" alt="ADU_advanced" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
+<img src="..\images\ADU_adv.png" alt="ADU advanced" class="enlargeable" width="250" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
 
 <br>
 <br>
@@ -222,7 +224,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 <h3 id="syringe-pump">Syringe Pump</h3>
 
-<img src="..\images\liquid_handling.png" alt="spectrometer" class="enlargeable" width="350">
+<img src="..\images\liquid_handling.png" alt="Liquid Handling" class="enlargeable" width="350">
 
 - **Initialize** the pump at the chosen **Syringe COM port**.
 - Send a **Custom command** to the syringe pump using the text field, then press the button.

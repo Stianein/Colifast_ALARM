@@ -381,7 +381,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.md = MarkdownIt()
 
         # Convert markdown to html
-        html_content = self.convert_markdown_to_html(os.path.join(path, "docs\manual.md"))
+        html_content = self.convert_markdown_to_html(os.path.join(path, "docs", "manual.md"))
         print(html_content)
 
         # Load the HTML into the QTextBrowser from the designer file
@@ -393,15 +393,19 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
     # Convert markdown to html and adjust paths to images for the pyinstaller folder structure.
     def convert_markdown_to_html(self, md_file_path):
+        global path
         with open(md_file_path, 'r') as file:
             md_content = file.read()
 
+        md_path_correction = md_content.replace('src="..\\', f'src="{path}\\')
+
         # Convert Markdown to HTML
-        html_content = self.md.render(md_content)
-
-        # Adjust image paths for pyinstaller's exe file and the _internal folder
-        html_content = html_content.replace('src="images', f'src="{path}\\images')
-
+        html_content = self.md.render(md_path_correction)
+        
+        # Test to see if generated HTML actually manages the path and if it is QWebEngine that struggles.
+        # with open("output_html_path.html", 'w', encoding='utf-8') as file:
+        #     file.write(html_content)
+        
         return html_content
 
 
@@ -3303,11 +3307,11 @@ class CalibrationDialog(QDialog):
     # Store the new read value to settings, for futer use.
     def use_new_value(self):
         if self.radio_10.isChecked():
-            settings.storeCalTurb10(self.new_value)
+            settings.storeCalTurb10(int(self.new_value))
         elif self.radio_5.isChecked():
-            settings.storeCalTurb5(self.new_value)
+            settings.storeCalTurb5(int(self.new_value))
         elif self.radio_0.isChecked():
-            settings.storeCalTurb0(self.new_value)
+            settings.storeCalTurb0(int(self.new_value))
 
         # Run the background program with the selected calibration value
         # Update the old and new values accordingly

@@ -18,7 +18,7 @@ a = Analysis(
         (os.path.join(path_to_program, 'components'), 'components'),
         (os.path.join(path_to_program, 'images'), 'images'),
         (os.path.join(path_to_program, 'icons'), 'icons'),
-        (os.path.join(path_to_program, 'Styles'), 'Styles'),
+        (os.path.join(path_to_program, 'styles'), 'styles'),
         (os.path.join(path_to_program, '__init__.py'), '.'),
         (os.path.join(path_to_program, 'method_helper.py'), '.'),
         (os.path.join(path_to_program, 'PumpCommServer.dll'), '.'),
