@@ -916,10 +916,9 @@ class Ui_MainWindow(object):
         self.manual.setObjectName("manual")
         self.verticalLayout_28 = QtWidgets.QVBoxLayout(self.manual)
         self.verticalLayout_28.setObjectName("verticalLayout_28")
-        self.manualBrowser = QtWebEngineWidgets.QWebEngineView(self.manual)
-        self.manualBrowser.setUrl(QtCore.QUrl("about:blank"))
-        self.manualBrowser.setObjectName("manualBrowser")
-        self.verticalLayout_28.addWidget(self.manualBrowser)
+        self.manualBrowserText = QtWidgets.QTextBrowser(self.manual)
+        self.manualBrowserText.setObjectName("manualBrowserText")
+        self.verticalLayout_28.addWidget(self.manualBrowserText)
         self.stackedWidget_1.addWidget(self.manual)
         self.verticalLayout_8.addWidget(self.stackedWidget_1)
         self.stackedWidget.addWidget(self.resultAndManual)
@@ -1175,5 +1174,4 @@ class Ui_MainWindow(object):
         self.remainingSamples.setToolTip(_translate("MainWindow", "Medium indicator - CLICK to update new bottle"))
         self.remainingSamples.setFormat(_translate("MainWindow", "20/21"))
         self.startNewMethod.setToolTip(_translate("MainWindow", "Start Run"))
-from PyQt5 import QtWebEngineWidgets
 import Icons_rc

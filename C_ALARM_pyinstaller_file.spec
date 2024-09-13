@@ -5,7 +5,7 @@ import os
 
 # Define paths
 path_to_program = os.path.abspath(".")
-path_to_libraries = "C:\\Users\\Colifast\\anaconda3\\envs\\colifast\\"
+path_to_libraries = "C:\\Users\\stin_20170258\\AppData\\Local\\anaconda3\\envs\\colifast"
 
 a = Analysis(
     ['Colifast_ALARM_manager.py'],
@@ -30,7 +30,7 @@ a = Analysis(
         (os.path.join(path_to_program, 'AduHid64.dll'), '.'),
         (os.path.join(path_to_program, 'AduHid.dll'), '.'),
         (os.path.join(path_to_program, 'run_seabreeze_setup.bat'), '.'),
-        (os.path.join(path_to_program, 'docs\manual.md'), 'docs'),
+        (os.path.join(path_to_program, 'docs\manual.html'), 'docs'),
         (os.path.join(sys.exec_prefix, 'Lib'), 'Lib'),
 
         # Include any additional directories or files necessary
@@ -41,8 +41,7 @@ a = Analysis(
         'Colifast_ALARM_manager.TimeSelectorDialog', 'Colifast_ALARM_manager.PDFReport',
         'Colifast_ALARM_manager.LogIn', 'Colifast_ALARM_manager.SFMadv',
         'Colifast_ALARM_manager.LiquidHandling','Colifast_ALARM_manager.AD', 
-        'python_designer_files.ADUadv', 'python_designer_files.ADUadv_generator.ADUadv', 
-        'python_designer_files.ADUadv_generator', 'python_designer_files.editor'
+
     ],
     hookspath=[],
     hooksconfig={},

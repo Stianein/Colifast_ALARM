@@ -25,7 +25,7 @@ from PyQt5.QtWidgets import (
     QTextBrowser
 )
 from PyQt5.QtSvg import QSvgRenderer
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+# from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 # PyQt helper modules
 import pyqtgraph as pg
@@ -372,42 +372,14 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.minimizebtn.clicked.connect(self.minimize_window)
 
 
-
-        # Load the markdown manual and implement it in its QTextBorwser page #
-        from markdown_it import MarkdownIt
-        # from markdown_it.extensions.toc import toc_plugin
-
-        # Initialize the MarkdownIt parser
-        self.md = MarkdownIt()
-
-        # Convert markdown to html
-        html_content = self.convert_markdown_to_html(os.path.join(path, "docs", "manual.md"))
-        print(html_content)
+        # Load manual html file and attach it to the manual page
+        with open(resource_path(os.path.join(path, "docs", "manual.html"))) as file:
+            html_content = file.read()
 
         # Load the HTML into the QTextBrowser from the designer file
-        self.manualBrowser.setHtml(html_content)
-
+        self.manualBrowserText.setHtml(html_content)
         # set the size of the window  on opening
         self.resize(800, 600)
-
-
-    # Convert markdown to html and adjust paths to images for the pyinstaller folder structure.
-    def convert_markdown_to_html(self, md_file_path):
-        global path
-        with open(md_file_path, 'r') as file:
-            md_content = file.read()
-
-        md_path_correction = md_content.replace('src="..\\', f'src="{path}\\')
-
-        # Convert Markdown to HTML
-        html_content = self.md.render(md_path_correction)
-        
-        # Test to see if generated HTML actually manages the path and if it is QWebEngine that struggles.
-        # with open("output_html_path.html", 'w', encoding='utf-8') as file:
-        #     file.write(html_content)
-        
-        return html_content
-
 
 
     ### Method Start/Stop functions ###
@@ -685,7 +657,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
                     next_sample = self.datetimestringler(self.future_samples[0])
                     # Update next sample in status browser
-                    string = f"Delay next sample, {next_sample}"
+                    string = f"Next sample is scheduled at: {next_sample}"
                     self.setStatus(string)
 
         except Exception as e:

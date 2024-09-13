@@ -128,13 +128,13 @@ For installing the prerequisite packages and setting up an environment for runni
 
 Go to Anaconda's webpage to download https://www.anaconda.com/download
 
-1. Set up an environement using the provided environment.yml file.
-   ```sh
-   conda env create -f environment.yml
-   ```
-2. Clone the repo
+1. Clone the repo
    ```sh
    git clone https://github.com/Stianein/Colifast_ALARM
+   ```
+2. Set up an environement using the provided environment.yml file.
+   ```sh
+   conda env create -f environment.yml
    ```
 3. Change git remote url to avoid accidental pushes to base project
    ```sh
