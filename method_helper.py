@@ -15,8 +15,9 @@ import settings as settings
 from Colifast_ALARM_manager import WorkerThread as wt
 from Colifast_ALARM_manager import DatabaseHandler
 from Colifast_ALARM_manager import ErrorDialog
+
 #PyQt imports
-from PyQt5.QtCore import QCoreApplication, QDateTime, QThread, pyqtSignal
+from PyQt5.QtCore import QCoreApplication, QDateTime, QThread, pyqtSignal, QEventLoop
 from PyQt5.QtWidgets import QGraphicsScene, QDialog, QMessageBox
 
 log = logging.getLogger("method_logger")
@@ -31,7 +32,7 @@ alarm_turb = None
 alarm_bact = None
 
 ### RUNNING THE METHOD ###
-def run_method(self, filename, sample_id, status_message, update_plot, error_msg, startTime, bactAlarm, turbAlarm, finished_signal):  # Check if all/some of these args could be replaced by importing from CA!!
+def run_method(self, filename, sample_id, status_message, update_plot, error_msg, startTime, bactAlarm, turbAlarm, finished_signal, warning_signal, dialog_result_signal):  # Check if all/some of these args could be replaced by importing from CA!!
 
 	# Globals
 	global folder_path
@@ -41,6 +42,10 @@ def run_method(self, filename, sample_id, status_message, update_plot, error_msg
 	global status
 	global alarm_turb
 	global alarm_bact
+	global warning
+	global response
+	warning = warning_signal
+	response = dialog_result_signal
 	sampleID = sample_id
 	alarm_turb = turbAlarm
 	alarm_bact = bactAlarm
@@ -198,12 +203,12 @@ def error(message):
 
 # Send out warning to halt program - used for programs that need some interaction with the user like contamination wash etc.
 def warning_message(message):
-	print("In warning message")
-	msg_box = ErrorDialog(message)
-	accept = msg_box.exec_()
-	if accept == QDialog.Accepted:
-		return True
-	else:
-		print("Aborting program")
-		status.emit("Aborting program")
-		return False
+	
+	# Emit signal to show the dialog
+	warning.emit(message)
+	print("Worker is waiting for user response...")
+
+	# Create a local event loop to pause the worker thread until dialog result is received
+	loop = QEventLoop()
+	response.connect(loop.quit)  # When dialog result is received, exit the loop
+	loop.exec_()  # Start the local event loop, pausing worker here

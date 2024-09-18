@@ -415,7 +415,10 @@ def preset_values():
     # if not getBottleSize():
     #     storeBottleSize(21)
     #     storeRemaining(21)
-        # self.update_medium_progress_bar(new_flask=True)        
+        # self.update_medium_progress_bar(new_flask=True)  
+    # Sample source
+    if not getSampleSource():
+        storeSampleSource("sample")      
     # Frequency
     if getFrequency() == None:
         storeFrequency(1)

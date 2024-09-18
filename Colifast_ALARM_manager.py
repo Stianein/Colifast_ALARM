@@ -160,6 +160,12 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.worker_thread.status_message.connect(self.setStatus)
         # Update plot signal from worker thread to plot data in GUI
         self.worker_thread.update_plot.connect(self.plot_historic_data)
+
+        # Warning signal from worker - pause execution until user has done somehting
+        self.worker_thread.warning_signal.connect(self.warning_message)
+        self.worker_thread.dialog_result_signal.connect(self.handle_dialog_result)
+
+
         # initialize id variable
         self.sample_id = None
         # Starting Time text
@@ -247,12 +253,12 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Set the sample source settings value and label
         source = settings.getSampleSource()
         if source is not None and dual:
-            if source == "sample1":
-                source = "sample2"
+            if source == 5:
+                next_source = "sample 2"
             else:
-                source = "sample1"
+                next_source = "sample 1"
             self.sampleSource.show()
-            string = f"next source: {source}"
+            string = f"next source: {next_source}"
             self.sampleSource.setText(string)
         else:
             self.sampleSource.hide()
@@ -1545,8 +1551,8 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         pdf.result_section(RunInfo[10], result_f, result_t)
 
         # Create The right folder to store the report in
-        print("TEST DATE: ", str(SampleInfo[3]))
-        folder = self.create_year_month_folders(self.datetimestringler(str(SampleInfo[3])))
+        print("TEST DATE: ", str(SampleInfo[4]))
+        folder = self.create_year_month_folders(self.datetimestringler(str(SampleInfo[4])))
         string_3 = f"/{date}.pdf"
         pdf.output(folder + string_3)
 
@@ -1718,7 +1724,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         dual_samp = self.dualSamples.checkState()
         if settings.getSampleSource() == None:
             # Switch in method file lead to start at sample1 - first run
-            settings.storeSampleSource("sample2")
+            settings.storeSampleSource(5)
         if dual_samp:
             self.externalSample.setChecked(0)
             settings.storeExtSamp(0)
@@ -1727,12 +1733,12 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             source = settings.getSampleSource()
             # As this is designed to alternate in method file the source 
             # of the next sample would be the oposite of current source.
-            if source == "sample1":
-                source = "sample2"
+            if source == 5:
+                next_source = "sample 2"
             else:
-                source = "sample1"
+                next_source = "sample 1"
 
-            string = f"Next source: {source}"
+            string = f"Next source: {next_source}"
             self.sampleSource.setText(string)
         else:
             self.sampleSource.hide()
@@ -2092,6 +2098,22 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             new_text = new_text + message + "\n\n"
         # Set updated text back to the QTextBrowser
         self.status_browser.setText(new_text)
+
+    ## Handle warnings from worker thread.
+    def warning_message(self, message):
+        # Show the dialog and capture the result (this happens on the main thread)
+        dialog = ErrorDialog(message)
+        result = dialog.exec_()  # This will block the main thread until user response (OK or Cancel)
+
+        # Emit the result back to the worker (True if accepted, False if rejected)
+        self.worker_thread.dialog_result = (result == QDialog.Accepted)
+        self.worker_thread.dialog_result_signal.emit(True)
+
+    def handle_dialog_result(self, accepted):
+        if accepted:
+            print("Main thread: Dialog was accepted.")
+        else:
+            print("Main thread: Dialog was rejected.")
 
     # set text in startTime field
     def startTime(self, txt):
@@ -2637,6 +2659,8 @@ class WorkerThread(QThread):
     startTime = pyqtSignal(str)
     bactAlarm = pyqtSignal(str)
     turbAlarm = pyqtSignal(str)
+    warning_signal = pyqtSignal(str)
+    dialog_result_signal = pyqtSignal(bool)
 
     def __init__(self, main_window):
         super().__init__()
@@ -2666,12 +2690,14 @@ class WorkerThread(QThread):
                 f_name = method
                 # Start the long running method
                 method_helper.run_method(self, f_name, self.sample_id, self.status_message, self.update_plot\
-                                         , self.error_msg, self.startTime, self.bactAlarm, self.turbAlarm, self.finished_signal)
+                                         , self.error_msg, self.startTime, self.bactAlarm, self.turbAlarm, \
+                                         self.finished_signal, self.warning_signal, self.dialog_result_signal)
             elif settings.getMethod() is not None or settings.getMethod() == "":
                 f_name = settings.getMethod()
                 # Start the long running method
                 method_helper.run_method(self, f_name, self.sample_id, self.status_message, self.update_plot\
-                                         , self.error_msg, self.startTime, self.bactAlarm, self.turbAlarm, self.finished_signal)
+                                         , self.error_msg, self.startTime, self.bactAlarm, self.turbAlarm, \
+                                         self.finished_signal, self.warning_signal, self.dialog_result_signal)
             else:
                 self.error_msg.emit("Failed to load method file")
             return

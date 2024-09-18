@@ -139,7 +139,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.label_5.sizePolicy().hasHeightForWidth())
         self.label_5.setSizePolicy(sizePolicy)
         self.label_5.setText("")
-        self.label_5.setPixmap(QtGui.QPixmap("Qt_files\\../images/Colifast_50pix_medium.png"))
+        self.label_5.setPixmap(QtGui.QPixmap(":/images/Images/Colifast_50pix_medium.png"))
         self.label_5.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.label_5.setObjectName("label_5")
         self.horizontalLayout_7.addWidget(self.label_5)
