@@ -1062,91 +1062,9 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             self.aduWindow.update_adu_relay_buttons()
 
         self.reset_button_styles()
-
-        # for button in self.findChildren(QPushButton):
-        #     if button.parentWidget() == self.menuButtons or button.parentWidget() == self.advancedMenu:
-        #         button.setStyleSheet("")
-
         pressed_button.setStyleSheet(stylesheet_color)
 
-    ## Bottle size selector ##
-    # toggle "more options" menu and relevant content #
-    # def toggle_more_options_menu(self, menu):
-    #     stylesheet_color = "background-color: " + self.btn_press + ";"
-    #     # open bottle selector, close all else
-    #     if menu == 0:
-    #         if not self.bottleSize.isHidden():
-    #             self.hide_all_option_menus()
-    #             self.toggle_menu()
-    #             self.bottleSizeBtn.setStyleSheet("")
-    #         else:
-    #             self.hide_all_option_menus()
-    #             self.toggle_menu()
-    #             self.moreOptions.show()
-    #             self.bottleSize.show()
-    #             self.otherValues.show()
-    #             self.methodBtn.setStyleSheet("")
-    #             self.historyBtn.setStyleSheet("")
-    #             self.reportBtn.setStyleSheet("")
-    #             self.bottleSizeBtn.setStyleSheet(stylesheet_color)
-
-    #     # open the method options, close all else
-    #     elif menu == 1:
-    #         if not self.methodOptions.isHidden():
-    #             self.hide_all_option_menus()
-    #             self.toggle_menu()
-    #             self.methodBtn.setStyleSheet("")
-    #         else:
-    #             self.hide_all_option_menus()
-    #             self.toggle_menu()
-    #             self.moreOptions.show()
-    #             self.methodOptions.show()
-    #             self.bottleSizeBtn.setStyleSheet("")
-    #             self.historyBtn.setStyleSheet("")
-    #             self.reportBtn.setStyleSheet("")
-    #             self.methodBtn.setStyleSheet(stylesheet_color)
-
-    #     # open history options, close all else
-    #     elif menu == 2:
-    #         if not self.historyOptions.isHidden() and self.createReport.isHidden():
-    #             self.hide_all_option_menus()
-    #             self.toggle_menu()
-    #             self.historyBtn.setStyleSheet("")
-    #         else:
-    #             self.hide_all_option_menus()
-    #             self.toggle_menu()
-    #             self.createReport.hide()
-    #             self.plotOptions.show()
-    #             self.plotBtn.show()
-    #             self.moreOptions.show()
-    #             self.historyOptions.show()
-    #             self.stackedWidget_1.setCurrentIndex(0)
-    #             self.methodBtn.setStyleSheet("")
-    #             self.reportBtn.setStyleSheet("")
-    #             self.bottleSizeBtn.setStyleSheet("")
-    #             self.historyBtn.setStyleSheet(stylesheet_color)
-
-    #     # open report options, close all else
-    #     elif menu == 3:
-    #         if not self.historyOptions.isHidden() and not self.createReport.isHidden():
-    #             self.hide_all_option_menus()
-    #             self.toggle_menu()
-    #             self.reportBtn.setStyleSheet("")
-    #         else:
-    #             self.hide_all_option_menus()
-    #             self.toggle_menu()
-    #             self.plotOptions.hide()
-    #             self.createReport.show()
-    #             self.plotBtn.hide()
-    #             self.reportBtn.setStyleSheet(stylesheet_color)
-    #             self.moreOptions.show()
-    #             self.historyOptions.show()
-    #             self.methodBtn.setStyleSheet("")
-    #             self.bottleSizeBtn.setStyleSheet("")
-    #             self.historyBtn.setStyleSheet("")
-
-
-
+    # Clear all styling of previously clicked buttons 
     def reset_button_styles(self):
         """Reset the style of all buttons to clear any previous selection."""
         for button in self.findChildren(QPushButton):
@@ -1160,10 +1078,6 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             for w in self.leftSubContainer.findChildren(QWidget):
                 w.show()
             self.leftSubContainer.show()
-            # self.bottleSize.hide()
-            # self.methodOptions.hide()
-            # self.historyOptions.hide()
-            # self.moreOptions.hide()
             self.leftContainer.show()
             if ADUadv.instantiated:
                 self.advancedMenu.show()
@@ -1178,10 +1092,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             # Hide all menus before opening a chosen menu
             self.leftContainer.hide()
             self.leftSubContainer.hide()
-            for button in self.findChildren(QPushButton):
-                # Update styling of the buttons to clear previously 
-                if button.parentWidget() == self.menuButtons:
-                    button.setStyleSheet("")
+            self.reset_button_styles()
 
 
     ## STYLING ##
