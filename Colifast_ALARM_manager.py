@@ -115,12 +115,12 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Hidden menues at start up
         self.leftSubContainer.hide()
         self.leftContainer.hide()
-        self.moreOptions.hide()
-        self.methodOptions.hide()
-        self.bottleSize.hide()
-        self.historyOptions.hide()
-        self.advancedMenu.hide()
-        self.hideCheckBox.hide()
+        # self.moreOptions.hide()
+        # self.methodOptions.hide()
+        # self.bottleSize.hide()
+        # self.historyOptions.hide()
+        # self.advancedMenu.hide()
+        # self.hideCheckBox.hide()
 
         # Set color manually
         self.headerContainer.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -163,8 +163,6 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
         # Warning signal from worker - pause execution until user has done somehting
         self.worker_thread.warning_signal.connect(self.warning_message)
-        self.worker_thread.dialog_result_signal.connect(self.handle_dialog_result)
-
 
         # initialize id variable
         self.sample_id = None
@@ -190,20 +188,27 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
         ## Side menu ##
         # Show
-        self.menuBtn.clicked.connect(self.toggle_menu)
+        self.menuBtn.clicked.connect(self.show_menu)
         # Hidden button for new flask update below progressbar
         self.hiddenButton.clicked.connect(self.progBar_clicked)
         # Medium #
         # Bottle menu click
-        self.bottleSizeBtn.clicked.connect(lambda: self.toggle_more_options_menu(0))
+        # Connect menu actions to toggle_menu
+        self.bottleSizeBtn.clicked.connect(lambda: self.toggle_menu("bottle"))
+        self.methodBtn.clicked.connect(lambda: self.toggle_menu("method"))
+        self.historyBtn.clicked.connect(lambda: self.toggle_menu("history"))
+        self.reportBtn.clicked.connect(lambda: self.toggle_menu("report"))
+
+
+        # self.bottleSizeBtn.clicked.connect(lambda: self.toggle_more_options_menu(0))
         # Change value for bottle size
         self.bottleSize.valueChanged.connect(lambda: self.bottle_changer(False))
         # method options #
-        self.methodBtn.clicked.connect(lambda: self.toggle_more_options_menu(1))
+        # self.methodBtn.clicked.connect(lambda: self.toggle_more_options_menu(1))
         # history options
-        self.historyBtn.clicked.connect(lambda: self.toggle_more_options_menu(2))
+        # self.historyBtn.clicked.connect(lambda: self.toggle_more_options_menu(2))
         # Report options
-        self.reportBtn.clicked.connect(lambda: self.toggle_more_options_menu(3))
+        # self.reportBtn.clicked.connect(lambda: self.toggle_more_options_menu(3))
         # other values for bottle size than are dividable by the 7 (days of the week)
         self.otherValues.clicked.connect(self.update_bottle_size_manual_option)
         # Styling buttons
@@ -307,7 +312,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Frequency
         frequency = self.get_frequency()
         self.freq_box.setCurrentIndex(frequency)
-        self.sample_frequency_changer()
+        #self.sample_frequency_changer()
 
         ## History menu ##
         # update the chosen date
@@ -328,10 +333,10 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
         ## SCHEDUALING ##
         # Slider for schedualing sample runs
-        self.dayScheduler.valueChanged.connect(self.sched_samples)
+        # self.dayScheduler.valueChanged.connect(self.sched_samples)
         # self.dayScheduler.setValue(settings.getBottleSize())
         # Hide schedualer menu
-        self.shedualerMenu.hide()
+        # self.shedualerMenu.hide()
 
         ## Method File ##
         # populate the method file drop-down #
@@ -386,7 +391,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.manualBrowserText.setHtml(html_content)
         # set the size of the window  on opening
         self.resize(800, 600)
-
+        self.setMaximumSize(800, 600)
 
     ### Method Start/Stop functions ###
     ## Start/Stop current run ##
@@ -474,7 +479,10 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # If there is a current run
         if not self.startNewMethod.isChecked():
             # Update status browser
-            self.setStatus("The run is stopping after current run")
+            self.setStatus("The run is stopping after current sample")
+            current_text = self.startingTime.text()
+            self.startTime(f"The run is stopping after current sample \n\n{current_text}")
+
             if self.startNewMethod.isChecked():
                 self.stop_updater()
             # Set the stop after current variable to true
@@ -973,7 +981,6 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 else:
                     self.menuBtn.click()
             # Temporary solution to solve the program expanding out of the monitor - this will create a little strange behaviour when not ran on an industrial computer.
-            self.resize(800, 600)
 
     # Toggle maximize/normal window size #
     def toggle_maximized(self):
@@ -1005,17 +1012,72 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 continue
 
     ## Menu's and Animations ##
-    # Toggle side menu visability #
-    def toggle_menu(self):
+    # # Toggle side menu visability #
+    def toggle_menu(self, menu):
+        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget_1.setCurrentIndex(0)
+        stylesheet_color = "background-color: " + self.btn_press + ";"
+        button = self.sender()
+        if menu == "bottle":
+            index = 0
+        elif menu == "method":
+            index = 1
+        elif menu == "history":
+            index = 2
+        elif menu == "report":
+            index = 3
+
+
+        """Toggle between different option menus contained in the QStackedWidget."""
+        if self.moreOptions.isHidden():
+            self.moreOptions.show()
+            self.moreOptions.setCurrentIndex(index)
+        else:
+            current_index = self.moreOptions.currentIndex()
+            if current_index == index:
+                self.moreOptions.hide()
+            else:
+                self.moreOptions.setCurrentIndex(index)
+
+        # You can also reset any additional states (if needed)
+        self.reset_button_styles()
+        button.setStyleSheet(stylesheet_color)
+
+    # Switch between pages of the advanced menus
+    def advmenu_button_click(self, index):
+        self.moreOptions.hide()
+        stylesheet_color = "background-color: " + self.btn_press + ";"
+        # self.toggle_menu()
+        pressed_button = self.sender()
+        if pressed_button == self.backBtn:
+            self.stackedWidget.setCurrentIndex(0)
+            self.stackedWidget_1.setCurrentIndex(0)
+        elif pressed_button == self.manualBtn:
+            self.stackedWidget.setCurrentIndex(0)
+            self.stackedWidget_1.setCurrentIndex(1)
+        else:
+            self.stackedWidget.setCurrentIndex(1)
+            self.stackedWidget.setCurrentIndex(index)
+            # Update adu button status
+            self.aduWindow.update_adu_relay_buttons()
+
+        self.reset_button_styles()
+        pressed_button.setStyleSheet(stylesheet_color)
+
+    # Clear all styling of previously clicked buttons 
+    def reset_button_styles(self):
+        """Reset the style of all buttons to clear any previous selection."""
+        for button in self.findChildren(QPushButton):
+            if button.parentWidget() == self.menuButtons or button.parentWidget() == self.advancedMenu:
+                button.setStyleSheet("")
+
+
+    def show_menu(self):
         if self.leftSubContainer.isHidden():
-            # Show the menu
+            # # Show the menu
             for w in self.leftSubContainer.findChildren(QWidget):
                 w.show()
             self.leftSubContainer.show()
-            self.bottleSize.hide()
-            self.methodOptions.hide()
-            self.historyOptions.hide()
-            self.moreOptions.hide()
             self.leftContainer.show()
             if ADUadv.instantiated:
                 self.advancedMenu.show()
@@ -1028,24 +1090,10 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 self.checkbox_hiding()
         else:
             # Hide all menus before opening a chosen menu
-            self.hide_all_option_menus()
-            for button in self.findChildren(QPushButton):
-                # Update styling of the buttons to clear previously 
-                if button.parentWidget() == self.frame_2:
-                    button.setStyleSheet("")
+            self.leftContainer.hide()
+            self.leftSubContainer.hide()
+            self.reset_button_styles()
 
-    # Function to hide all menus
-    def hide_all_option_menus(self):
-        for w in self.leftSubContainer.findChildren(QWidget):
-                w.hide()
-        self.bottleSize.hide()
-        self.methodOptions.hide()
-        self.historyOptions.hide()
-        self.moreOptions.hide()
-        self.leftSubContainer.hide()
-        self.leftContainer.hide()
-        self.advancedMenu.hide()
-        self.otherValues.hide()
 
     ## STYLING ##
     # Change and Load stylesheet
@@ -1164,111 +1212,10 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         self.color_picker = ColorPicker(self)
         self.color_picker.show()
 
-    ## Bottle size selector ##
-    # toggle "more options" menu and relevant content #
-    def toggle_more_options_menu(self, menu):
-        stylesheet_color = "background-color: " + self.btn_press + ";"
-        # open bottle selector, close all else
-        if menu == 0:
-            if not self.bottleSize.isHidden():
-                self.hide_all_option_menus()
-                self.toggle_menu()
-                self.bottleSizeBtn.setStyleSheet("")
-            else:
-                self.hide_all_option_menus()
-                self.toggle_menu()
-                self.moreOptions.show()
-                self.bottleSize.show()
-                self.otherValues.show()
-                self.methodBtn.setStyleSheet("")
-                self.historyBtn.setStyleSheet("")
-                self.reportBtn.setStyleSheet("")
-                self.bottleSizeBtn.setStyleSheet(stylesheet_color)
-
-        # open the method options, close all else
-        elif menu == 1:
-            if not self.methodOptions.isHidden():
-                self.hide_all_option_menus()
-                self.toggle_menu()
-                self.methodBtn.setStyleSheet("")
-            else:
-                self.hide_all_option_menus()
-                self.toggle_menu()
-                self.moreOptions.show()
-                self.methodOptions.show()
-                self.bottleSizeBtn.setStyleSheet("")
-                self.historyBtn.setStyleSheet("")
-                self.reportBtn.setStyleSheet("")
-                self.methodBtn.setStyleSheet(stylesheet_color)
-
-        # open history options, close all else
-        elif menu == 2:
-            if not self.historyOptions.isHidden() and self.createReport.isHidden():
-                self.hide_all_option_menus()
-                self.toggle_menu()
-                self.historyBtn.setStyleSheet("")
-            else:
-                self.hide_all_option_menus()
-                self.toggle_menu()
-                self.createReport.hide()
-                self.plotOptions.show()
-                self.plotBtn.show()
-                self.moreOptions.show()
-                self.historyOptions.show()
-                self.stackedWidget_1.setCurrentIndex(0)
-                self.methodBtn.setStyleSheet("")
-                self.reportBtn.setStyleSheet("")
-                self.bottleSizeBtn.setStyleSheet("")
-                self.historyBtn.setStyleSheet(stylesheet_color)
-
-        # open report options, close all else
-        elif menu == 3:
-            if not self.historyOptions.isHidden() and not self.createReport.isHidden():
-                self.hide_all_option_menus()
-                self.toggle_menu()
-                self.reportBtn.setStyleSheet("")
-            else:
-                self.hide_all_option_menus()
-                self.toggle_menu()
-                self.plotOptions.hide()
-                self.createReport.show()
-                self.plotBtn.hide()
-                self.reportBtn.setStyleSheet(stylesheet_color)
-                self.moreOptions.show()
-                self.historyOptions.show()
-                self.methodBtn.setStyleSheet("")
-                self.bottleSizeBtn.setStyleSheet("")
-                self.historyBtn.setStyleSheet("")
-
-
-    # Switch between pages of the advanced menus
-    def advmenu_button_click(self, index):
-        stylesheet_color = "background-color: " + self.btn_press + ";"
-        self.hide_all_option_menus()
-        self.toggle_menu()
-        pressed_button = self.sender()
-        if pressed_button == self.backBtn:
-            self.stackedWidget.setCurrentIndex(0)
-            self.stackedWidget_1.setCurrentIndex(0)
-        elif pressed_button == self.manualBtn:
-            self.stackedWidget.setCurrentIndex(0)
-            self.stackedWidget_1.setCurrentIndex(1)
-        else:
-            self.stackedWidget.setCurrentIndex(1)
-            self.stackedWidget.setCurrentIndex(index)
-            # Update adu button status
-            self.aduWindow.update_adu_relay_buttons()
-
-        for button in self.findChildren(QPushButton):
-            if button.parentWidget() == self.frame_2 or button.parentWidget() == self.advancedMenu:
-                button.setStyleSheet("")
-
-        pressed_button.setStyleSheet(stylesheet_color)
-
 
     ## Plotting historic data ##
     # Make the dates of the calendar that have data, interactive
-    def historic_data_availability_to_calender(self):
+    def historic_data_availability_to_calender(self, calendar):
         interactive_format = QTextCharFormat()
         interactive_format.setForeground(Qt.black)
         interactive_format.setBackground(Qt.white)
@@ -1280,7 +1227,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             # Check data availability for specific dates
             for date_with_data in list_of_dates_with_data:
                 date = QDate.fromString(date_with_data, 'yyyy-MM-dd')
-                self.historyCalendar.setDateTextFormat(date, interactive_format)
+                calendar.setDateTextFormat(date, interactive_format)
         else:
             return
 
@@ -1289,7 +1236,8 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         db = DatabaseHandler()
         try:
             # Query database for dates
-            query = 'SELECT DISTINCT date FROM SampleInfo'
+            # Maybe check for data in spectraldata and that it has more readings than 0 or 1/ more than those initial test reads
+            query = 'SELECT DISTINCT date FROM SampleInfo WHERE full_sample_time is not NULL'
             results = db.fetch_data(query)
             # Extract date strings from the results
             date_strings = [result[0] for result in results if result[0] is not None]
@@ -1318,22 +1266,23 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     # Update when slider is changed
     # historic plot slider
     def n_samples(self):
-        string = f"n={self.horizontalSlider.value()}"
+        string = f"samples to plot = {self.horizontalSlider.value()}"
         self.nSamples.setText(string)
         self.updateCalendar()
-    # Schedual slider
-    def sched_samples(self):
-        self.dayScheduler.setMaximum(settings.getBottleSize())
-        value = self.dayScheduler.value()
-        string = f"n={value}"
-        self.schedSamples.setText(string)
-        settings.storeSamplesNr(value)
-        self.update_medium_progress_bar()
+    # # Schedual slider
+    # def sched_samples(self):
+    #     self.dayScheduler.setMaximum(settings.getBottleSize())
+    #     value = self.dayScheduler.value()
+    #     string = f"n={value}"
+    #     self.schedSamples.setText(string)
+    #     settings.storeSamplesNr(value)
+    #     self.update_medium_progress_bar()
 
     # Update the calendar to visually indicate selected dates
     def updateCalendar(self):
         self.resetCalendarColors()
-        self.historic_data_availability_to_calender()
+        self.historic_data_availability_to_calender(self.historyCalendar)
+        self.historic_data_availability_to_calender(self.reportCalendar)
 
         multiple_days_format = QTextCharFormat()
         # Get highlight color of calendar
@@ -1588,7 +1537,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         print("bot, samp, remain; ", bottle_size, settings.getSamplesNr(), settings.getRemaining())
         settings.storeSamplesNr(bottle_size)
         settings.storeBottleSize(bottle_size)
-        self.dayScheduler.setValue(settings.getSamplesNr())
+        # self.dayScheduler.setValue(settings.getSamplesNr())
         settings.storeRemaining(bottle_size)
         self.update_medium_progress_bar(True)
 
@@ -1646,8 +1595,18 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             delay = 1
         elif "48 hours cycle" in sample_freq:
             delay = 2
-        elif "Manual" in sample_freq:
-            delay, ok_pressed = QInputDialog.getInt(self, "Sample Run Scheduler", "Enter the number of days between sample runs:")
+        elif "Custom interval" in sample_freq:
+            if settings.getFrequency() > 2:
+                delay = settings.getFrequency()
+            else:
+                delay, ok_pressed = QInputDialog.getInt(self, 
+                                                        "Sample Run Scheduler", 
+                                                        "Enter the number of days between sample runs:", 
+                                                        value=3, 
+                                                        min=3)
+
+            self.freq_box.setItemText(3, f"Custom interval ({delay})")
+
         settings.storeFrequency(delay)
         print(settings.getFrequency())
 
@@ -1924,12 +1883,14 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             # Closing the advanced menu options upon accept
             if accept:
                 try:
+                    # Trigger back button click to remove the advanced screen displayed
+                    self.backBtn.click()
                     # remove advanced menu bar
                     self.advancedMenu.hide()
                     self.hideCheckBox.hide()
                     self.checkbox_hiding()
-                    # Hide schedualer menu
-                    self.shedualerMenu.hide()
+                    # # Hide schedualer menu
+                    # self.shedualerMenu.hide()
                     # Remove all pages from the stacked widget starting from index 1
                     try:
                         index = 1
@@ -2108,12 +2069,6 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         # Emit the result back to the worker (True if accepted, False if rejected)
         self.worker_thread.dialog_result = (result == QDialog.Accepted)
         self.worker_thread.dialog_result_signal.emit(True)
-
-    def handle_dialog_result(self, accepted):
-        if accepted:
-            print("Main thread: Dialog was accepted.")
-        else:
-            print("Main thread: Dialog was rejected.")
 
     # set text in startTime field
     def startTime(self, txt):

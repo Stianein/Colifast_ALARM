@@ -101,7 +101,6 @@ def instrument_stop(self):
 	adu.off(7) # RK7 
 	return
 
-
 # Functino for extracting full spectrum, or single wavelength reading, with the option of averaging over more readings and 
 # getting an average of the readings over a, nm_bandwidth of wavelengths
 def sfm_read(wavelength, store_data=True, nm_bandwidth = 1, readings_to_average_over=None, series_id=1):
