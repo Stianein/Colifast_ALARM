@@ -85,7 +85,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
    - Navigate to the **Method** section.
    - From the **Method File** drop-down menu, select the file you want the program to run.
-   - Select the target bacteria group from the **Analysis** drop-down.
+   - Select the target bacteria group from the **Analysis** drop-down. This option controls the incubation time of the method only, and adjustments to this parameter, must coincide with adjustments of temperature and type of medium too. Give us a call to discuss your options.
    - Set the frequency of samples:
      - Continuously
      - 24 hours intervals

@@ -67,18 +67,22 @@ def run_method(self, filename, sample_id, status_message, update_plot, error_msg
 		settings.setstopSignal(0)
 	except RuntimeError as e:
 		settings.setstopSignal(0)
+		self.instrument_stop()
 		status.emit(str(e))
 		error_message.emit(str(e))
 	except ErrorMsg as e:
 		settings.setstopSignal(0)
+		self.instrument_stop()
 		status.emit(str(e))
 		error_message.emit(e.message)
 	except SystemExit as e:
 		settings.setstopSignal(0)
+		self.instrument_stop()
 		return
 		#status.emit("Stopping Run...")
 	except TimeoutError as e:
 		settings.setstopSignal(0)
+		self.instrument_stop()
 		status.emit(str(e))
 		error_message.emit(e.message)
 
@@ -88,6 +92,14 @@ class ErrorMsg(Exception):
 		self.message = message
 		log.error(message)
 		super().__init__(self.message)
+
+
+# If the instrument stops for some reason, set the stop/error signal 
+def instrument_stop(self):
+	adu.on(2) # SK2
+	delay(1)
+	adu.off(7) # RK7 
+	return
 
 # Functino for extracting full spectrum, or single wavelength reading, with the option of averaging over more readings and 
 # getting an average of the readings over a, nm_bandwidth of wavelengths
