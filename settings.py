@@ -1,21 +1,34 @@
 ##### SETTINGS - VALUES STORED BETWEEN RUNS #####
 ##### Author: Stian Ingebrigtsen and Julie Knapstad & Are Pettersen
 from PyQt5.QtCore import QCryptographicHash, QSettings
+from PyQt5.QtCore import QSettings
 
-def storePassword(string):
-    hash = QCryptographicHash.hash(string.encode(), QCryptographicHash.Sha256)
-    settings = QSettings("Colifast", "ALARM")  # ("Company", "Product")
-    settings.setValue("password", hash)
-def getPassword(string):
+def storePassword(username, password):
+    hash = QCryptographicHash.hash(password.encode(), QCryptographicHash.Sha256)
     settings = QSettings("Colifast", "ALARM")
-    stored_hash = settings.value("password", None)
-    """if stored_hash == None:  # IF YOU EVER FORGET THE PASSWORD, UN-STRING THIS
-        return True"""
-    hash = QCryptographicHash.hash(string.encode(), QCryptographicHash.Sha256)
-    if stored_hash == hash or stored_hash is None:
+    settings.setValue(f"{username}_password", hash)
+
+def getPassword(username, password):
+    settings = QSettings("Colifast", "ALARM")
+    stored_hash = settings.value(f"{username}_password", None)
+    
+    if stored_hash is None:
+        # Handle case where there is no stored hash (e.g., account does not exist)
+        return False
+
+    # Ensure stored_hash is a QByteArray, if not convert it
+    if isinstance(stored_hash, str):
+        stored_hash = QByteArray.fromHex(stored_hash.encode())
+
+    hash = QCryptographicHash.hash(password.encode(), QCryptographicHash.Sha256)
+
+    # Compare the hashes
+    if stored_hash == hash:
         return True
     else:
         return False
+
+
     
 # SETUP_FLAG
 def storeSetupFlag(setup):

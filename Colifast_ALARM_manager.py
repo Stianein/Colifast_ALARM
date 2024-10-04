@@ -1004,6 +1004,9 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
     # Closing the program and all its widgets, so nothing is left running in the background.
     def close_all_windows(self):
+        accepted = self.show_error_message("You are about to close the Colifast ALARM software.\n Press 'X' to cancel the closeing")
+        if not accepted:
+            return
         app = QApplication.instance()
         for widget in app.topLevelWidgets():
             try:
@@ -1027,7 +1030,6 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         elif menu == "report":
             index = 3
 
-
         """Toggle between different option menus contained in the QStackedWidget."""
         if self.moreOptions.isHidden():
             self.moreOptions.show()
@@ -1039,7 +1041,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             else:
                 self.moreOptions.setCurrentIndex(index)
 
-        # You can also reset any additional states (if needed)
+        # Reset buttons previously clicked, and set style for the newly clicked
         self.reset_button_styles()
         button.setStyleSheet(stylesheet_color)
 
@@ -1079,6 +1081,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 w.show()
             self.leftSubContainer.show()
             self.leftContainer.show()
+            self.moreOptions.hide()
             if ADUadv.instantiated:
                 self.advancedMenu.show()
                 self.hideCheckBox.show()
@@ -2724,7 +2727,7 @@ class LogIn(QDialog, Ui_login):
         self.login_cancel.clicked.connect(self.reject)
 
     def loginOk(self):
-        if self.login_user.text() == '' and settings.getPassword(self.login_pass.text()):
+        if settings.getPassword(self.login_user.text(), self.login_pass.text()):
             self.accept()   # Hides the modal dialog and sets the result code to Accepted.
             self.login_user.clear()
             self.login_pass.clear()
