@@ -2029,7 +2029,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     ## LOGGING ##
     # Set up the logging features
     def setup_logging(self):
-        self.log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')# logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        self.log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         self.log_handler = None
         log = logging.getLogger("method_logger")
         log.setLevel(logging.INFO)
@@ -3418,6 +3418,7 @@ class LiquidHandling(QWidget):
         self.image_item = QGraphicsPixmapItem(pixmap)
         self.scene.addItem(self.image_item)
 
+        # XLP
         # Initialize buttons
         self.initialize_xlp_btn = QPushButton()
         self.custom_command = QPushButton()
@@ -3447,7 +3448,7 @@ class LiquidHandling(QWidget):
         com_mpv_layout.addSpacing(160)
         self.xlp_com.setLayout(com_mpv_layout)
 
-        self.xlp_volume_display = QLabel()
+        self.xlp_volume_display = QLabel("- !!!")
 
         # Send command
         self.command = QLineEdit()
@@ -3617,8 +3618,8 @@ class LiquidHandling(QWidget):
              'volume display':  {
                  'proxy': QGraphicsProxyWidget(),
                  'button': self.xlp_volume_display,
-                 'style': "QLabel {background-color: transparent; width: 50; height:40; color: transparent; }",
-                 'position': (125, 101),
+                 'style': "QLabel {background-color: transparent; width: 50; height:40; text-align: center; color: grey; }",
+                 'position': (165, 101),
              },
              'COM XLP':  {
                  'proxy': QGraphicsProxyWidget(),
@@ -3725,6 +3726,8 @@ class LiquidHandling(QWidget):
 
                         # Connect a slot to the toggled signal to change the background when checked
                     else:
+                        if elem_name == "volume display":
+                            elem_name = "-"
                         button.setText(elem_name)
                 except:
                     pass
