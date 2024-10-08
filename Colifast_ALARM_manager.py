@@ -633,6 +633,8 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                     if settings.getRemaining() > 0:
                         time.sleep(1)
                         self.setStatus("Awaiting remote start...")
+                        current_text = self.startingTime.text()
+                        self.startTime(f"Awaiting remote start... \n\n{current_text}")
                     self.stop_updater()
                     self.startNewMethod.setChecked(True)
                     return
@@ -656,6 +658,8 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                         if not self.call_start:
                             self.future_samples = []
                             self.setStatus("Awaiting remote start...")
+                            current_text = self.startingTime.text()
+                            self.startTime(f"Awaiting remote start... \n\n{current_text}")
                             return
                         else:
                             pass
@@ -798,7 +802,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                 self.log.setLevel(logging.INFO)
                 self.log.addHandler(self.log_handler)
 
-            self.log.info("### NEW SAMPLE RUN ###")
+            self.log.info("\n\n### NEW SAMPLE RUN ###\n\n")
 
             # Get spectrophotometer serial number
             try:
@@ -1041,7 +1045,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             else:
                 self.moreOptions.setCurrentIndex(index)
 
-        # Reset buttons previously clicked, and set style for the newly clicked
+        # Reset buttons previously clicked, then set style for the newly clicked
         self.reset_button_styles()
         button.setStyleSheet(stylesheet_color)
 
@@ -1073,7 +1077,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             if button.parentWidget() == self.menuButtons or button.parentWidget() == self.advancedMenu:
                 button.setStyleSheet("")
 
-
+    # Function to expand the main sidebar menu - adds advanced feature of the menu if aduadv is instantiated
     def show_menu(self):
         if self.leftSubContainer.isHidden():
             # # Show the menu
@@ -1095,14 +1099,13 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             # Hide all menus before opening a chosen menu
             self.leftContainer.hide()
             self.leftSubContainer.hide()
-            self.reset_button_styles()
 
 
     ## STYLING ##
     # Change and Load stylesheet
-    def change_stylesheet(self, mode): #, bac="#03601F", fore="#157933", btn="#004415", cont="#C3813D", txt="#fff"):
+    def change_stylesheet(self, mode):
         global path
-        # Set colors for the modes on features outside of stylesheets(button-pressed, )
+        # Set colors for the modes on features not accessible from stylesheets
         settings.storeStyle(mode)
 
         # Set colors for the different Style modes
@@ -1255,24 +1258,25 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         month = selected_date.month()
         day = selected_date.day()
         date_string = f"{year}-{month:02d}-{day:02d}"
-        # date_string = year + "-" + month + "-" + day
         self.selected_date = date_string
         self.updateCalendar()
 
-    # CheckBox that activates full series and thus deactivates n-samples
+    # CheckBox that activates full series - it will thus plot all samples from a run in any given run, based on the data in th database
+    # And thus deactivates n-samples - the value for manually selecting how many samples to plot
     def update_slider_state(self, state):
-        self.horizontalSlider.setValue(1)
         self.horizontalSlider.setEnabled(not state)
         settings.storePlotSeries(state)
         self.updateCalendar()
 
     # Update when slider is changed
-    # historic plot slider
+    # historic plot slider - choose how many samples to plot in the same plot
     def n_samples(self):
         string = f"samples to plot = {self.horizontalSlider.value()}"
         self.nSamples.setText(string)
         self.updateCalendar()
-    # # Schedual slider
+
+    # # Schedual slider - a feature that can be rewoked if the ability to start a run of less samples than the bottle size
+    # # - so as to isolate the value of bottle size and the amount of samples ran. Maybe this will never be necessary. 
     # def sched_samples(self):
     #     self.dayScheduler.setMaximum(settings.getBottleSize())
     #     value = self.dayScheduler.value()
@@ -1281,7 +1285,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     #     settings.storeSamplesNr(value)
     #     self.update_medium_progress_bar()
 
-    # Update the calendar to visually indicate selected dates
+    # Update the calendar to visually indicate selected dates - with regards to n-samples or full-series(selected run) option
     def updateCalendar(self):
         self.resetCalendarColors()
         self.historic_data_availability_to_calender(self.historyCalendar)
@@ -1672,6 +1676,8 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             # Start the remote GSM listner
             self.mobileRemoteToggle.start()
             self.setStatus("Awaiting remote start...")
+            current_text = self.startingTime.text()
+            self.startTime(f"Awaiting remote start... \n\n{current_text}")
 
         else:
             try:
@@ -2023,10 +2029,10 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     ## LOGGING ##
     # Set up the logging features
     def setup_logging(self):
-        self.log_formatter = logging.Formatter('%(message)s')# logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        self.log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')# logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         self.log_handler = None
         log = logging.getLogger("method_logger")
-        log.setLevel(logging.DEBUG)
+        log.setLevel(logging.INFO)
     # Create a new log file for a sample run
     def create_log_handler(self, start_time=None, file=None):
         if file == None:
@@ -2604,7 +2610,6 @@ class GSM_listner(QThread):
     def is_running(self):
         with self.lock:
             return self.running
-
 
 
 #### Class for running a full length sample in a separate thread to maintain interoperability of the main GUI thread ####
@@ -3521,8 +3526,8 @@ class LiquidHandling(QWidget):
 
         ## Set tooltip ##
         self.V1_btn.setToolTip("Waste")
-        self.V2_btn.setToolTip("Sample Out")
-        self.V3_btn.setToolTip("Reagent B")
+        self.V2_btn.setToolTip("Reagent B")
+        self.V3_btn.setToolTip("Sample Out")
         self.V4_btn.setToolTip("Acid")
         self.V5_btn.setToolTip("Sample")
         self.V6_btn.setToolTip("Medium")
@@ -3543,7 +3548,7 @@ class LiquidHandling(QWidget):
         self.periPump = QPushButton()
         self.periPump.setToolTip("Peristaltic Pump")
 
-        # Couple to licking functions
+        # Couple to clicking functions
         self.valve_button_group.buttonClicked.connect(self.updateRadioButtons)
         self.dispense_btn.clicked.connect(self.dispSyringe)
         self.aspirate_btn.clicked.connect(self.aspSyringe)
@@ -3877,7 +3882,7 @@ class LiquidHandling(QWidget):
     def dispSyringe(self):
             try:
                 print('dispensing syringe volume')
-                disp_vol = int(self.xlp_volume_display.text())
+                disp_vol = int(self.syringeVolume_input.text())
                 if not isinstance(disp_vol, int):
                     number_error = ErrorDialog("Volume must be a number")
                     accept = number_error.exec_()

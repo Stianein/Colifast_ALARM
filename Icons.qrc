@@ -289,7 +289,6 @@
     <file>icons/zoom-out.svg</file>
   </qresource>
   <qresource prefix="images">
-    <file>images/Colifast_50pix.png</file>
-    <file>images/Colifast_50pix_medium.png</file>
+    <file>Images/Colifast_50pix_medium.png</file>
   </qresource>
 </RCC>

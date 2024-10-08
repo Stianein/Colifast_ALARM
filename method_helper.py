@@ -99,7 +99,6 @@ def instrument_stop(self):
 	adu.on(2) # SK2
 	delay(1)
 	adu.off(7) # RK7 
-	return
 
 # Functino for extracting full spectrum, or single wavelength reading, with the option of averaging over more readings and 
 # getting an average of the readings over a, nm_bandwidth of wavelengths

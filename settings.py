@@ -462,6 +462,8 @@ def preset_values():
     # Syringe pumpe size
     if not getPumpSize():
         storePumpSize(25000)
+    if not getPassword("colifast", "colifast"):
+        storePassword("colifast", "colifast")
 
 
 

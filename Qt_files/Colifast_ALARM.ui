@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>838</width>
-    <height>626</height>
+    <width>830</width>
+    <height>609</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -311,7 +311,7 @@
              <string/>
             </property>
             <property name="pixmap">
-             <pixmap resource="../Icons.qrc">:/images/images/Colifast_50pix_medium.png</pixmap>
+             <pixmap resource="../Icons.qrc">:/images/Images/Colifast_50pix_medium.png</pixmap>
             </property>
             <property name="scaledContents">
              <bool>false</bool>
@@ -2596,7 +2596,7 @@ color: grey;</string>
                          </sizepolicy>
                         </property>
                         <property name="text">
-                         <string>Latest ALARMs</string>
+                         <string>Latest ALARM</string>
                         </property>
                        </widget>
                       </item>
