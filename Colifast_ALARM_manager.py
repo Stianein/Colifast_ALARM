@@ -13,7 +13,7 @@ from PyQt5.QtGui import (
     QPainter, QPixmap, QMouseEvent, QPalette, QTextCharFormat, QIcon, QColor, QBrush
 )
 from PyQt5.QtCore import (
-    Qt, QPoint, QCoreApplication,
+    Qt, QPoint, QCoreApplication, QSize, 
     QThread, pyqtSignal, QDate, QTimer, QFile, QTextStream, QUrl
 )
 from PyQt5.QtWidgets import (
@@ -134,6 +134,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Bottle size #
         if not settings.getBottleSize() or settings.getBottleSize() == 0:
             # force show objects for choosing bottle size, if not set
+            self.alarmFrame.hide()
             self.bottleSize.show()
             self.leftSubContainer.show()
             self.leftContainer.show()
@@ -179,6 +180,8 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Lay a hidden button under the progressbar to enable resetting of bottle upon changing to a new flask
         self.hiddenButton = QPushButton(self.remainingSamples)
         self.hiddenButton.setObjectName("hiddenButton")
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.hiddenButton.setSizePolicy(sizePolicy)
         # Set the geometry of the hidden button to match the progress bar
         self.hiddenButton.setGeometry(self.remainingSamples.geometry())
         # Tooltip
@@ -453,7 +456,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
             if accept:
                 # Set stopsignal high
                 settings.setstopSignal(1)
-                self.setStatus("Stoped")
+                self.setStatus("Stopped")
                 self.stop_updater()
                 self.setStatus("Aborting all scheduled runs...")
 
@@ -544,7 +547,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Log and Data handling
         if not self.database_and_logging_run(start_time, samples):
             settings.setstopSignal(1)
-            self.setStatus("Stoped")
+            self.setStatus("Stopped")
             self.stop_updater()
             return
 
@@ -628,7 +631,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                 if self.stop_after_current_sample:
                     # Reset the stop after current sample parameter
                     self.stop_after_current_sample = False
-                    self.setStatus("The run was stoped now, after ended sample")
+                    self.setStatus("The run was stopped now, after ended sample")
                     # Print awaiting remote start to status browser if there are more samples left in the medium container
                     if settings.getRemaining() > 0:
                         time.sleep(1)
@@ -640,9 +643,9 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                     return
                 # If the run is continuous the next sample is just started imediately.
                 if settings.getFrequency() == 0:
-                    # A control check if the user has stoped the program without it being handled by the software
+                    # A control check if the user has stopped the program without it being handled by the software
                     if self.startNewMethod.isChecked():
-                        self.setStatus("The user has stoped the run")
+                        self.setStatus("The user has stopped the run")
                         return
                     else:
                         self.start_new_sample()
@@ -1019,8 +1022,15 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 continue
 
     ## Menu's and Animations ##
-    # # Toggle side menu visability #
+    # Toggle side menu visability #
     def toggle_menu(self, menu):
+        size = self.size()
+        size = QSize(800, 600) if size.width() > 800 or size.height() > 600 else size
+
+        # Temporarily disable layout updates
+        self.setUpdatesEnabled(False)
+
+
         self.stackedWidget.setCurrentIndex(0)
         self.stackedWidget_1.setCurrentIndex(0)
         stylesheet_color = "background-color: " + self.btn_press + ";"
@@ -1036,18 +1046,30 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
         """Toggle between different option menus contained in the QStackedWidget."""
         if self.moreOptions.isHidden():
+            self.alarmFrame.hide()
             self.moreOptions.show()
             self.moreOptions.setCurrentIndex(index)
         else:
             current_index = self.moreOptions.currentIndex()
             if current_index == index:
                 self.moreOptions.hide()
+                self.alarmFrame.show()
             else:
                 self.moreOptions.setCurrentIndex(index)
 
         # Reset buttons previously clicked, then set style for the newly clicked
         self.reset_button_styles()
         button.setStyleSheet(stylesheet_color)
+
+       # Re-enable layout updates after processing
+        self.setUpdatesEnabled(True)
+
+        # Force layout recalculation and resize
+        self.adjustSize()
+        # Defer resize to prevent layout recalculations from overriding it
+        QTimer.singleShot(0, lambda: self.resize(size))
+        # self.resize(size)
+  
 
     # Switch between pages of the advanced menus
     def advmenu_button_click(self, index):
@@ -1079,12 +1101,20 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
     # Function to expand the main sidebar menu - adds advanced feature of the menu if aduadv is instantiated
     def show_menu(self):
+        size = self.size()
+        size = QSize(800, 600) if size.width() > 800 or size.height() > 600 else size
+        
+        # Temporarily disable layout updates
+        self.setUpdatesEnabled(False)
+        
+        # print("before: ", size)
         if self.leftSubContainer.isHidden():
             # # Show the menu
-            for w in self.leftSubContainer.findChildren(QWidget):
-                w.show()
-            self.leftSubContainer.show()
+            # for w in self.leftSubContainer.findChildren(QWidget):
+            #     print(w)
+            #     w.show()
             self.leftContainer.show()
+            self.leftSubContainer.show()
             self.moreOptions.hide()
             if ADUadv.instantiated:
                 self.advancedMenu.show()
@@ -1095,10 +1125,20 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 self.advancedMenu.hide()
                 self.hideCheckBox.hide()
                 self.checkbox_hiding()
+
         else:
             # Hide all menus before opening a chosen menu
-            self.leftContainer.hide()
             self.leftSubContainer.hide()
+            self.leftContainer.hide()
+            self.alarmFrame.show()
+
+        # Re-enable layout updates after processing
+        self.setUpdatesEnabled(True)
+
+        # Force layout recalculation and resize
+        self.adjustSize()
+        # Defer resize to prevent layout recalculations from overriding it
+        QTimer.singleShot(0, lambda: self.resize(size))
 
 
     ## STYLING ##
@@ -1736,7 +1776,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             # If the remote start is chosen skip the error message, as there is no one there to check it
             if settings.getRemoteStart():
                 return 1
-            string = f"Last run was stoped midway, and there are {samples_left} samples left in the medium bottle"
+            string = f"Last run was stopped midway, and there are {samples_left} samples left in the medium bottle"
             result = self.show_error_message(string, True)
         # in case of changing - update the progress bar to reflect the now newly inserted bottle
         if result == QDialog.Accepted:
@@ -2795,7 +2835,7 @@ class ErrorDialog(QDialog):
             # Connect the OK button to the accept() slot
             self.ok_button.clicked.connect(self.register_selections)
 
-        elif "Last run was stoped midway," in error_message:
+        elif "Last run was stopped midway," in error_message:
             layout = QHBoxLayout()
             # add buttons Continue, and inserted a new bottle option
             self.continueBtn = QPushButton("Continue with the remaining medium")
