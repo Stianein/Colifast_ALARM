@@ -483,8 +483,8 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         if not self.startNewMethod.isChecked():
             # Update status browser
             self.setStatus("The run is stopping after current sample")
-            current_text = self.startingTime.text()
-            self.startTime(f"The run is stopping after current sample \n\n{current_text}")
+            current_text = self.startingTime.toPlainText()
+            self.startingTime.setText(f"The run is stopping after current sample \n\n{current_text}")
 
             if self.startNewMethod.isChecked():
                 self.stop_updater()
@@ -637,7 +637,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                         time.sleep(1)
                         self.setStatus("Awaiting remote start...")
                         current_text = self.startingTime.text()
-                        self.startTime(f"Awaiting remote start... \n\n{current_text}")
+                        self.startingTime.setText(f"Awaiting remote start... \n\n{current_text}")
                     self.stop_updater()
                     self.startNewMethod.setChecked(True)
                     return
@@ -662,7 +662,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                             self.future_samples = []
                             self.setStatus("Awaiting remote start...")
                             current_text = self.startingTime.text()
-                            self.startTime(f"Awaiting remote start... \n\n{current_text}")
+                            self.startingTime.setText(f"Awaiting remote start... \n\n{current_text}")
                             return
                         else:
                             pass
@@ -1716,8 +1716,8 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             # Start the remote GSM listner
             self.mobileRemoteToggle.start()
             self.setStatus("Awaiting remote start...")
-            current_text = self.startingTime.text()
-            self.startTime(f"Awaiting remote start... \n\n{current_text}")
+            current_text = self.startingTime.toPlainText()
+            self.startingTime.setText(f"Awaiting remote start... \n\n{current_text}")
 
         else:
             try:
@@ -3320,8 +3320,6 @@ class CalibrationDialog(QDialog):
         self.old_value_label.setText(f"New Value: {self.new_value}")
         self.turbidity.setText("Turbidity: ")
 
-    # Consider running this with a Worker instead, now that warnings 
-    # can be printet andcontinuation of program halted until user interact.
     # FUNCTION for running file containing turbidity read
     def turbidity_reading(self):
         file_dialog = QFileDialog()
