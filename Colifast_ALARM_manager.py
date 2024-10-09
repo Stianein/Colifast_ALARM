@@ -484,7 +484,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
             # Update status browser
             self.setStatus("The run is stopping after current sample")
             current_text = self.startingTime.toPlainText()
-            self.startingTime.setText(f"The run is stopping after current sample \n\n{current_text}")
+            self.startTime(f"{current_text}\n\nThe run is stopping after current sample")
 
             if self.startNewMethod.isChecked():
                 self.stop_updater()
@@ -637,7 +637,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                         time.sleep(1)
                         self.setStatus("Awaiting remote start...")
                         current_text = self.startingTime.text()
-                        self.startingTime.setText(f"Awaiting remote start... \n\n{current_text}")
+                        self.startTime(f"{current_text}\n\nAwaiting remote start...")
                     self.stop_updater()
                     self.startNewMethod.setChecked(True)
                     return
@@ -662,7 +662,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                             self.future_samples = []
                             self.setStatus("Awaiting remote start...")
                             current_text = self.startingTime.text()
-                            self.startingTime.setText(f"Awaiting remote start... \n\n{current_text}")
+                            self.startTime(f"{current_text}\n\nAwaiting remote start...")
                             return
                         else:
                             pass
@@ -1701,6 +1701,15 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         # Twice to remove the "awaiting remote start..." text from the status bar
         self.setStatus("")
         self.setStatus("")
+        text = self.startingTime.toPlainText()
+        print(text)
+        if "Awaiting remote start" in text:
+            text = text.replace("\n\nAwaiting remote start...", "")
+            print(text)
+        else:
+            text = text.replace("\n\nThe run is stopping after current sample", "")
+        self.startTime(text)
+        text.strip()
         if remote_start:
             self.delayStartTime.setChecked(0)
             settings.storeDelayStart(0)
@@ -1717,7 +1726,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             self.mobileRemoteToggle.start()
             self.setStatus("Awaiting remote start...")
             current_text = self.startingTime.toPlainText()
-            self.startingTime.setText(f"Awaiting remote start... \n\n{current_text}")
+            self.startTime(f"{current_text}\n\nAwaiting remote start...")
 
         else:
             try:
