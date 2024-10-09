@@ -625,6 +625,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
                 self.setStatus("All the scheduled runs have finished, add a new bottle of medium and start a new run")
 
+
             # THERE ARE MORE SAMPLES IN THE RUN #
             else:
                 # Aborting run now after this sample as the user has clicked/called for it 
@@ -636,7 +637,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                     if settings.getRemaining() > 0:
                         time.sleep(1)
                         self.setStatus("Awaiting remote start...")
-                        current_text = self.startingTime.text()
+                        current_text = self.startingTime.toPlainText()
                         self.startTime(f"{current_text}\n\nAwaiting remote start...")
                     self.stop_updater()
                     self.startNewMethod.setChecked(True)
@@ -661,27 +662,30 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                         if not self.call_start:
                             self.future_samples = []
                             self.setStatus("Awaiting remote start...")
-                            current_text = self.startingTime.text()
+                            current_text = self.startingTime.toPlainText()
                             self.startTime(f"{current_text}\n\nAwaiting remote start...")
                             return
                         else:
                             pass
                     # ADD the next job to the scheduler - this way the only info about futur run is kept in future_samples list,
                     # and can thus be modified here, before it is added to the scheduler(mobstart or other features for start/stop)
-                    
-                    # TESTING
-                    self.log.info(f"Future samples: {self.future_samples} LEngth: {len(self.future_samples)}")
 
+                    # TESTING
+                    self.log.info(f"Future samples: {self.future_samples} Length: {len(self.future_samples)}")
                     self.scheduler.add_job(self.start_new_sample, 'date', run_date=self.future_samples[0], misfire_grace_time=30)
                     # TESTING
                     self.log.info("scheduler has done its job")
-
                     next_sample = self.datetimestringler(self.future_samples[0])
                     # Update next sample in status browser
                     string = f"Next sample is scheduled at: {next_sample}"
                     self.setStatus(string)
 
+
         except Exception as e:
+            # Warn the user of stop/error
+            adu.on(2)
+            adu.on(7)
+
             self.log.error("An unexpected error occurred while scheduling a job.")
             self.log.error(traceback.format_exc())
             print("The finish run function stalled, you might be running a calibration method, or other service methods?")
