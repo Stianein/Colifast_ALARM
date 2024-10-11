@@ -613,7 +613,11 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
             # THE LAST SAMPLE HAS FINISHED #
             if sample_number >= settings.getSamplesNr() or settings.getRemaining() <= 0:
                 print("sample_nmb: ", sample_number, "settings: ", settings.getSamplesNr(), "Settings remain: ", settings.getRemaining())
-                self.mobileRemoteToggle.stop()
+                # Try to stop mobile remote listner (if it is running) - should not be possible to remote start when there is no medium left.
+                try:
+                    self.mobileRemoteToggle.stop()
+                except:
+                    pass
                 # Update start/stop button
                 self.startNewMethod.setChecked(True)
                 self.stop_updater()
@@ -3792,9 +3796,12 @@ class LiquidHandling(QWidget):
             self.scene.addItem(proxy)
 
     def update_xlpCom(self):
-        settings.storeXLPcom(int(self.com_xlp.text()))
+        if not self.com_xlp.text() == '':
+            settings.storeXLPcom(int(self.com_xlp.text()))
     def update_mpvCom(self):
-        settings.storeMPVcom(int(self.com_mpv.text()))
+        print(self.com_mpv.text(), type(self.com_mpv.text()))
+        if not self.com_mpv.text() == '':
+            settings.storeMPVcom(int(self.com_mpv.text()))
 
     def updateRadioButtons(self, button):
         try:

@@ -35,7 +35,7 @@ def initialize(COM=com):
                                     bytesize=serial.EIGHTBITS,
                                     stopbits=serial.STOPBITS_ONE,
                                     parity=serial.PARITY_NONE,
-                                    timeout=10)     # open serial port
+                                    timeout=1)     # open serial port
             # Initialization command
             mpv.reset_input_buffer()
             mpv.write('NP06\n'.encode())    # sets 6 positions for multiposition valve
@@ -66,7 +66,21 @@ def liquid(position):
     if pos:
         command = "GO" + pos + "\n"
         mpv.write(command.encode())
-        time.sleep(1)
+
+        # Attempt to read a response from the MPV after sending the command
+        response = mpv.read_until('\r')  # Try to read up to 10 bytes from the serial port
+        
+        # Check if any response is received
+        if not response:
+            log.error("No response from MPV after sending command.")
+            #return False
+            raise RuntimeError("Multiposition valve not responding")
+        else:
+            print("MPV response: ", response)
+        
+        #time.sleep(1)
+
     else:
         log.error("Invalid argument for mpv.liquid component")
-        return False
+        # return False
+        raise RuntimeError("Multiposition valve not responding")

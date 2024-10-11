@@ -156,7 +156,8 @@ class ADUCommunication:
             else:
                 error_message = self._get_last_error_message()
                 log.error(f"Unsuccessful read, command {command} " + error_message)
-                return error_message
+                # return error_message
+                raise RuntimeError(f"Unsuccessful read to ADU, command {command}: {error_message}")
             log.debug("\t\tReleasing lock in _read")
 
     # Functions for writing to the adu device
@@ -175,7 +176,9 @@ class ADUCommunication:
             else:
                 error_message = self._get_last_error_message()
                 log.error("Unsuccessful write, port A0 " + error_message)
-                return error_message
+                # return error_message
+                raise RuntimeError(f"Unsuccessful write to ADU, command {command}: {error_message}")
+
 
     # Function for turning on a relay
     def on(self, relay):
