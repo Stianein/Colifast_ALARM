@@ -322,8 +322,6 @@ class ADUadv(QWidget, ADU_window):
             print("implement this, or is it really necessary?")
 
 
-
-
     # Function to load ADU and update the relay buttons
     def load_adu(self):
         try:

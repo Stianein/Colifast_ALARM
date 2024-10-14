@@ -71,7 +71,7 @@ def request_spectra():
 	try:
 		# Check for user stop from GUI to abort the current run, if true
 		if settings.getstopSignal():
-			raise SystemExit("Stoping program")
+			raise SystemExit("Stopping program")
 		# USB 4000 spectrometers - the old colifast spectrometers - are not supporting nonlinearity correction 
 		# - so try with correction first in case of old spectrometer
 		try:
@@ -86,7 +86,7 @@ def request_spectra():
 				data = spec.intensities(correct_nonlinearity=False, correct_dark_counts=False)
 		return data
 	except:
-		raise RuntimeError("Could not initialize spectrophotometer")
+		raise RuntimeError("Could not get spectrum from spectrophotometer")
 
 # Function to close the device connection
 def close():

@@ -17,6 +17,7 @@ com = str(settings.getMPVcom())
 
 # Initialize Multi Position Valve
 def initialize(COM=com):
+    print("Initializes")
     # 9600 baud, no parity, 8 data bits, 1 stop bit, no hardware or software handshaking.
     global mpv
     # Close previous initialiazations before opening a new one
@@ -57,7 +58,7 @@ def liquid(position):
 
     # Check for user stop from GUI to abort the current run, if true
     if settings.getstopSignal():
-        raise SystemExit("Stoping program mpv")
+        raise SystemExit("Stopping program mpv")
 
     pos = str(position)
     log.info(f"moving to position {pos}")
@@ -66,19 +67,22 @@ def liquid(position):
     if pos:
         command = "GO" + pos + "\n"
         mpv.write(command.encode())
-
+        print("Moving to pos: ", pos)
+        
         # Attempt to read a response from the MPV after sending the command
-        response = mpv.read_until('\r')  # Try to read up to 10 bytes from the serial port
-        
-        # Check if any response is received
-        if not response:
-            log.error("No response from MPV after sending command.")
-            #return False
-            raise RuntimeError("Multiposition valve not responding")
+        mpv.write("STATUS\n".encode())  # Check if there's a status 
+        response = mpv.read_until('\r')
+        # Check if channel in status response matches the pos, command variable
+        # Rais an error if then there is no response from the MPV.
+        channel = f"CP0{pos}"
+        if channel.encode() in response:
+            print("OK")
         else:
-            print("MPV response: ", response)
-        
-        #time.sleep(1)
+            if not response:
+                log.error("No response from MPV after sending command.")
+                #return False
+                raise RuntimeError("Multiposition valve not responding")
+            print("initialization response: ", response)
 
     else:
         log.error("Invalid argument for mpv.liquid component")

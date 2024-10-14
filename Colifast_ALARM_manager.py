@@ -365,7 +365,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.startNewMethod.clicked.connect(self.toggle_worker)
         self.worker_thread.error_msg.connect(self.show_error_message)
         self.worker_thread.finished_signal.connect(self.finished_run)
-        # Variable for stoping program after current samples end
+        # Variable for stopping program after current samples end
         self.stop_after_current_sample = False 
         # Context menu for right-clicking start/stop button to allow for multiple options: abort run, or stop after sample has finnished
         self.startNewMethod.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -451,7 +451,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # TURN OFF - STOP
         # There are already a scheduler running
         else:
-            # Warn the user one extra time before stoping
+            # Warn the user one extra time before stopping
             accept = self.show_error_message("You are about to stop the run.")
             if accept:
                 # Set stopsignal high
@@ -1821,17 +1821,17 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         self.update_medium_progress_bar()
 
     # Function to open the custom error message window
-    def show_error_message(self, error_message, stop=False):
+    def show_error_message(self, error_message):
         dialog = ErrorDialog(error_message)
         accepted = dialog.exec_()
         if accepted == QDialog.Accepted:
-            accepted = True
-            if stop:
-                # Ensure the stopping of the run in case it is started
-                self.startNewMethod.setChecked(True)
-                # self.call_start = False
-                # Update start/stop button
-                self.stop_updater()
+            #accepted = True
+            print("stopping method")
+            # Ensure the stopping of the run in case it is started
+            self.startNewMethod.setChecked(True)
+            # self.call_start = False
+            # Update start/stop button
+            self.stop_updater()
 
 
         else:

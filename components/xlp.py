@@ -19,7 +19,7 @@ def send_command(command):
     global ser
     # Check for user stop from GUI to abort the current run, if true
     if settings.getstopSignal():
-        raise SystemExit("Stoping program")
+        raise SystemExit("Stopping program")
     # Command block wrapper and encoding
     command_block = "/1" + command + "\r"
     ser.write(command_block.encode(encoding="ascii", errors="ignore"))
@@ -58,6 +58,8 @@ def initialize(COM=com):
             # Initialization command
             command = "Z25R"
             send_command(command)
+            # Set the default flowrate to 400 ul/sec to ensure slow pace
+            flowrate(400)
             return True
         except:
             # three seconds delay inbetween tries
@@ -114,7 +116,7 @@ def delay_until_done():
 def _check_pump_status(ser):
     # Check for user stop from GUI to abort the current run, if true.
     if settings.getstopSignal():
-        raise SystemExit("Stoping program now")
+        raise SystemExit("Stopping program now")
     busy = True
     while busy:
         response = send_command("Q")
