@@ -2297,7 +2297,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         # Add the scatter plot item to the plot widget
         graph_widget.addItem(scatter) 
         
-        # # Handle the threshold line ADJUST THIS IF THRESHOLD SHALL BE MORE GLIDING (AS IT IS CALCULATED FOR EACH DAY, BUT THIS ONLY CONSIDERS THE FIRST SAMPLES BASELINE)
+        # # Handle the threshold line ADJUST THIS IF THRESHOLD SHALL BE MORE GLIDING (AS IT IS CALCULATED FOR EACH DAY, BUT NOW IT ONLY CONSIDERS THE FIRST SAMPLE'S BASELINE)
         # y_thresh = np.full_like(x_timestamps, threshold)  # Create an array for the threshold line
         # threshold_line = pg.PlotCurveItem(x_timestamps, y_thresh, pen=pg.mkPen(color='r', style=Qt.DashLine))
         # graph_widget.addItem(threshold_line)  # Add the threshold line to the plot
