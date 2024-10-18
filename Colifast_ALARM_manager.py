@@ -2190,9 +2190,13 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         if wavelength == settings.getWavelengthFluo():
             baseline = y[0]
             threshold = baseline * float(settings.getThresholdFluo())
+            # Axis names
+            widget.setLabel("left", text="Intensity (Fluorescence)")
         elif wavelength == settings.getWavelengthTurb():
             y = [(self.turb_FNU_calculator(intensity, sample_id)) for intensity in y]
             threshold = float(settings.getThresholdTurb())
+            # Axis names
+            widget.setLabel("left", text="Turbidity (FNU)")
         try:
             self.threshold_infinite_line(threshold, widget)
         except:
@@ -2231,8 +2235,8 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             intensity.append(elem[1])
 
         # Convert the datetime variables to hours difference to make them plotable
-        mod_time_measured = [(((t - time_measured[0]).total_seconds())/3600) for t in time_measured]
-        return mod_time_measured, intensity
+        # mod_time_measured = [(((t - time_measured[0]).total_seconds())/3600) for t in time_measured]
+        return time_measured, intensity
 
 
     # CREATE TAB AND WIDGET FOR PLOT(tab name)
@@ -2280,39 +2284,44 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             if tab_text == name:
                 self.tabWidget.removeTab(index)
 
-    # ADD DATA TO PLOT
-    # Function that plots data, x, y to the given widget, graph_widget.
+
+
+    # Function that plots data (x as datetime, y as values) to the given widget (graph_widget)
     def plot_data(self, x, y, graph_widget, threshold=0):
+        # Convert datetime to timestamps (float seconds since epoch)
+        x_timestamps = np.array([dt.timestamp() for dt in x])
         # Create the scatter plot item
         pen = pg.mkPen(color=QColor(self.color))
         scatter = pg.ScatterPlotItem(pen=pen, symbol="x", size=10)
-        scatter.setData(x, y)
-        graph_widget.addItem(scatter)
-        # Threshold line
-        y_thresh = y
-        y_thresh.append(threshold)
-        # Adjust range of plot
-        padding=10
-        graph_widget.setYRange(min(y) - padding, max(y_thresh) + padding) # X-axis
-        graph_widget.setXRange(min(x) - padding, max(x) + padding) # Y-axis
+        scatter.setData(x_timestamps, y)  # Use the converted timestamps for x-axis
+        # Add the scatter plot item to the plot widget
+        graph_widget.addItem(scatter) 
         
-        # Sett colors of the axis
+        # # Handle the threshold line ADJUST THIS IF THRESHOLD SHALL BE MORE GLIDING (AS IT IS CALCULATED FOR EACH DAY, BUT THIS ONLY CONSIDERS THE FIRST SAMPLES BASELINE)
+        # y_thresh = np.full_like(x_timestamps, threshold)  # Create an array for the threshold line
+        # threshold_line = pg.PlotCurveItem(x_timestamps, y_thresh, pen=pg.mkPen(color='r', style=Qt.DashLine))
+        # graph_widget.addItem(threshold_line)  # Add the threshold line to the plot
+
+        # Adjust the y-axis range with padding
+        padding = 10
+        graph_widget.setYRange(min(y) - padding, max(y) + padding)  # Adjust y-axis range based on y data
+        
+        # Set a DateAxisItem for the bottom x-axis to handle datetime formatting
+        axis = pg.DateAxisItem()
+        graph_widget.setAxisItems({"bottom": axis})  # Replace the bottom axis with a DateAxisItem
+        # Set X-axis descriptive text
+        graph_widget.getAxis('bottom').setLabel(text="Sample reading (date/time)", color='k', font="10pt")
+
+        # Set the color of the axis to match the plot's theme
         color = QColor(self.color)
         x_axis = graph_widget.getAxis('bottom')
         y_axis = graph_widget.getAxis('left')
         x_axis.setPen(color=color)
         y_axis.setPen(color=color)
 
-        # Add data to plot
-        scatter_data = [{'pos': (x, y)} for x, y in zip(x, y)]
-        scatter.setData(scatter_data)
-        graph_widget.addItem(scatter)
-
-        # Add the scatter plot item to the plot widget
-        graph_widget.addItem(scatter)
-
-        # Switch tab to plot tab to display the plotted graph
+        # Switch to the plot tab to display the graph (assuming this is part of a larger UI)
         self.backBtn.click()
+
 
     # PLOT THRESHOLD LINE
     def threshold_infinite_line(self, threshold, widget):
