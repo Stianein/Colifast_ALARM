@@ -105,6 +105,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        settings.storePassword("", "")
         # Frameless window
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowMinMaxButtonsHint)
         self.max = False
@@ -3890,10 +3891,16 @@ class LiquidHandling(QWidget):
     def xlp_initialize(self):
         try:
             xlp.initialize()
-        except:
-            initialization_failure = ErrorDialog("Could not initialize Syringe Pump")
+            # Set the default flowrate to 400 ul/sec to ensure slow pace
+            xlp.flowrate(400)
+            return True  # Success
+        except Exception as e:
+            # Log the error message
+            print(f"Initialization Error: {e}")
+            initialization_failure = ErrorDialog(f"Could not initialize Syringe Pump: {e}")
             accept = initialization_failure.exec_()
             return False
+
     def send_command(self):
         try:
             if self.command.text() == "":

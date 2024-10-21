@@ -67,9 +67,14 @@ def run_method(self, filename, sample_id, status_message, update_plot, error_msg
 		settings.setstopSignal(0)
 	except RuntimeError as e:
 		settings.setstopSignal(0)
-		instrument_stop()
-		status.emit(str(e))
-		error_message.emit(str(e))
+		message = str(e)
+		# If the error is with the ADU, there is no use in trying to switch relays
+		if not "ADU" in str(e):
+			instrument_stop()
+		else:
+			message = message + "\nTherby the instrument also fails to signal through LEDs and PLS."
+		status.emit(message)
+		error_message.emit(message)
 	except ErrorMsg as e:
 		settings.setstopSignal(0)
 		instrument_stop()

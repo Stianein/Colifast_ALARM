@@ -84,8 +84,7 @@ class ADUCommunication:
                 log.debug("Device found and connected")
                 self.initialized = True
             log.debug(f"\t\tConnection {'initialized' if self.initialized else 'failed to initialize'}")
-
-
+    
     # Function for handling the queue
     def _process_queue(self):
         while True:
@@ -103,8 +102,8 @@ class ADUCommunication:
                     future.set_result(result)
                     print(f"Task completed with result: {result}")
                 except Exception as e:
-                    future.set_exception(e)
-                    print(f"Task failed with exception: {e}")
+                    future.set_exception(e)  # Set exception on the future
+                    log.error(f"Task failed with exception: {e}")  # Log the error
             else:
                 log.debug(f"ADU Queue process, unexpected item structure: {item}")
             log.debug("\t\tTask processed successfully")
@@ -131,7 +130,14 @@ class ADUCommunication:
     # Functions for reading the adu device
     def read(self, command):
         future = self._enqueue_command(self._read, command)
-        return future.result()
+        try:
+            result = future.result()  # This will raise the RuntimeError if one was set
+        except RuntimeError as e:
+            log.error(f"An error occured when readuing from ADU. Command: {command}")
+            # Optionally, re-raise or handle the error further
+            raise RuntimeError(f"Lost connection to ADU. Failed with the command: {command}")
+        return result  # Return the successful result if applicable
+
     def _read(self, command):
         log.debug("\t\tThread attempting to acquire lock in _read")
         with self._lock:
@@ -152,18 +158,24 @@ class ADUCommunication:
                 else:
                     error_message = self._get_last_error_message()
                     log.error(f"Unsuccessful read, command {command} " + error_message)
-                    return error_message
+                    raise
             else:
                 error_message = self._get_last_error_message()
                 log.error(f"Unsuccessful read, command {command} " + error_message)
                 # return error_message
-                raise RuntimeError(f"Unsuccessful read to ADU, command {command}: {error_message}")
+                raise
             log.debug("\t\tReleasing lock in _read")
 
-    # Functions for writing to the adu device
     def write(self, command):
         future = self._enqueue_command(self._write, command)
-        return future.result()
+        try:
+            result = future.result()  # This will raise the RuntimeError if one was set
+        except RuntimeError as e:
+            log.error(f"An error occured when writing to ADU. Command: {command}")
+            # Optionally, re-raise or handle the error further
+            raise RuntimeError(f"Lost connection to ADU. Failed with the command: {command}")
+        return result  # Return the successful result if applicable
+
     def _write(self, command):
         with self._lock:
             if not self._validate_connection():
@@ -176,8 +188,7 @@ class ADUCommunication:
             else:
                 error_message = self._get_last_error_message()
                 log.error("Unsuccessful write, port A0 " + error_message)
-                # return error_message
-                raise RuntimeError(f"Unsuccessful write to ADU, command {command}: {error_message}")
+                raise
 
 
     # Function for turning on a relay
@@ -186,8 +197,8 @@ class ADUCommunication:
             log.error(f"The channel, {relay} is not a valid relay")
             return "Invalid relay channel"
         command = 'SK{}'.format(relay)
-        result = self.write(command)
-        return result
+        print("TEST")
+        self.write(command)
 
     # Function for turning off a relay
     def off(self, relay):
@@ -195,8 +206,8 @@ class ADUCommunication:
             log.error(f"The channel, {relay} is not a valid relay")
             return "Invalid relay channel"
         command = 'RK{}'.format(relay)
-        result = self.write(command)
-        return result
+        self.write(command)
+
 
     # Reset all ports
     def reset(self):

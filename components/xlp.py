@@ -8,10 +8,7 @@ import logging
 
 # Enable logging from this file
 log = logging.getLogger("method_logger")
-
-# Fetch pump variables
 pump_size = settings.getPumpSize()
-com = settings.getXLPcom()
 total_steps = 3000
 
 # Function for sending commands to pump (Tecan cavro's DT protocol - OEM protocol commands never seemed to work for me)
@@ -26,7 +23,7 @@ def send_command(command):
     response = ser.readline().decode(encoding="ascii", errors="ignore")
     # Catch a failed response
     if not response:
-        log.error("Syringe pump is not responding")
+        log.error("Syringe pump is not responding, in send command")
         raise RuntimeError("Syringe pump is not responding")
     time.sleep(0.1) # A delay was needed for the system to be able to handle the communication, the duration is chosen arbitrarily and might be optimized.
     return response.strip()
@@ -34,8 +31,18 @@ def send_command(command):
 
 ## Functions for pump operation
 # Initialization 1/3 of plunger force to spare the valve head of the syringe (controlled by, 2 in the "Z2R" command)
-def initialize(COM=com):
-    COM = str(COM)
+def initialize(COM=None):
+    global pump_size  # Declare that you're using the global pump_size
+    pump_size = settings.getPumpSize()  # Assign a value to it
+
+    if not COM:
+        # Fetch pump variables
+        COM = str(settings.getXLPcom())
+        print(COM, "NONE")
+    else:
+        COM = str(COM)
+        print(COM)
+
     global ser
     # Close previous initialiazations before opening a new one
     try:
@@ -58,14 +65,12 @@ def initialize(COM=com):
             # Initialization command
             command = "Z25R"
             send_command(command)
-            # Set the default flowrate to 400 ul/sec to ensure slow pace
-            flowrate(400)
             return True
         except:
-            # three seconds delay inbetween tries
+            # one second delay inbetween tries
             time.sleep(1)
             tries += 1
-        raise RuntimeError("Syringe pump not responding")
+        raise RuntimeError("Syringe pump failed to initialize")
 
 # Aspirate volume "P" indicates relative position of syringe plunger
 def aspirate(volume):
@@ -123,7 +128,7 @@ def _check_pump_status(ser):
         #print(response, "\t", response[2])
         #time.sleep(1)
         if not response:
-            log.error("Syringe pump is not responding")
+            log.error("Syringe pump is not responding, in check pump status")
             raise RuntimeError("Syringe pump is not responding")
         try:
             if response[2] == "`":

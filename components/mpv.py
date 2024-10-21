@@ -13,11 +13,14 @@ log = logging.getLogger("method_logger")
 
 # Fetch MPV variables
 mpv = None
-com = str(settings.getMPVcom())
 
 # Initialize Multi Position Valve
-def initialize(COM=com):
+def initialize(COM=None):
     print("Initializes")
+    if not COM:
+        COM = str(settings.getMPVcom())
+    else:
+        COM = str(COM)
     # 9600 baud, no parity, 8 data bits, 1 stop bit, no hardware or software handshaking.
     global mpv
     # Close previous initialiazations before opening a new one
