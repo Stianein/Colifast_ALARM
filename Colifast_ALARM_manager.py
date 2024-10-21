@@ -1788,14 +1788,14 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         # if a run is started when there likely is a bottle with leftovers in the instrument
         result = QDialog.Accepted
         if settings.getRemaining() <= 0:
-            result = self.show_error_message("Have you inserted a new media bottle?", True)
+            result = self.show_error_message("Have you inserted a new media bottle?")
         elif settings.getRemaining() != 0 and settings.getRemaining() != settings.getBottleSize():
             samples_left = settings.getRemaining()
             # If the remote start is chosen skip the error message, as there is no one there to check it
             if settings.getRemoteStart():
                 return 1
             string = f"Last run was stopped midway, and there are {samples_left} samples left in the medium bottle"
-            result = self.show_error_message(string, True)
+            result = self.show_error_message(string)
         # in case of changing - update the progress bar to reflect the now newly inserted bottle
         if result == QDialog.Accepted:
             self.update_medium_progress_bar()
@@ -1803,6 +1803,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             return 1
         else:
             print("medium check returns false")
+            self.startNewMethod.setChecked(True)
             return 0
 
     # Update the hide options for checkboxes - which is to be shown in user mode
@@ -1818,7 +1819,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
     # Update the medium level - samples left
     def progBar_clicked(self):
-        self.show_error_message("Have you inserted a new media bottle?", True)
+        self.show_error_message("Have you inserted a new media bottle?")
         self.update_medium_progress_bar()
 
     # Function to open the custom error message window
