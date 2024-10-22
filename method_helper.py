@@ -184,8 +184,11 @@ def delay(seconds):
 	if settings.getstopSignal():
 		raise SystemExit()
 	else:
-		for i in range(seconds):
-			time.sleep(1)
+		if seconds < 1:
+			time.sleep(seconds)
+		else:
+			for i in range(int(seconds)):
+				time.sleep(1)
 
 ### Variables to strings that enables the removal of quots, "", in the method file as an aestetic feature ###
 # mpv positions
