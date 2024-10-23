@@ -1274,15 +1274,21 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         interactive_format = QTextCharFormat()
         interactive_format.setForeground(Qt.black)
         interactive_format.setBackground(Qt.white)
+        pos_sample_format = QTextCharFormat()
+        pos_sample_format.setForeground(Qt.black)
+        pos_sample_format.setBackground(QColor(255, 102, 102))
 
         list_of_dates_with_data = self.find_dates_with_data_from_db()
         if list_of_dates_with_data:
             print(list_of_dates_with_data)
 
             # Check data availability for specific dates
-            for date_with_data in list_of_dates_with_data:
+            for date_with_data, pos in list_of_dates_with_data:
                 date = QDate.fromString(date_with_data, 'yyyy-MM-dd')
-                calendar.setDateTextFormat(date, interactive_format)
+                if pos:
+                    calendar.setDateTextFormat(date, pos_sample_format)
+                else:
+                    calendar.setDateTextFormat(date, interactive_format)
         else:
             return
 
@@ -1290,13 +1296,10 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     def find_dates_with_data_from_db(self):
         db = DatabaseHandler()
         try:
-            # Query database for dates
-            # Maybe check for data in spectraldata and that it has more readings than 0 or 1/ more than those initial test reads
-            query = 'SELECT DISTINCT date FROM SampleInfo WHERE full_sample_time is not NULL'
+            # Query database for dates and if it was a positive sample
+            query = 'SELECT DISTINCT date, bact_pos FROM SampleInfo WHERE full_sample_time is not NULL'
             results = db.fetch_data(query)
-            # Extract date strings from the results
-            date_strings = [result[0] for result in results if result[0] is not None]
-            return date_strings
+            return results
         except:
             return False
 
@@ -2321,7 +2324,9 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         x_axis.setPen(color=color)
         y_axis.setPen(color=color)
 
-        # Switch to the plot tab to display the graph (assuming this is part of a larger UI)
+        graph_widget.autoRange()
+
+        # Switch to the plot tab to display the graph, if other menus are chosen
         self.backBtn.click()
 
 
