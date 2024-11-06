@@ -611,6 +611,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                 self.update_dual_samples()
 
             self.log.info(f"sample_nmb: {sample_number} settings: {settings.getSamplesNr()} Settings remain: {settings.getRemaining()}")
+            
             # THE LAST SAMPLE HAS FINISHED #
             if sample_number >= settings.getSamplesNr() or settings.getRemaining() <= 0:
                 print("sample_nmb: ", sample_number, "settings: ", settings.getSamplesNr(), "Settings remain: ", settings.getRemaining())
@@ -1483,6 +1484,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             self.show_error_message("No data from that date")
             return False
 
+
     # Collect data from database to generate the report
     def data_collection_for_report(self, date):
         fluo_wl = str(settings.getWavelengthFluo())
@@ -2193,7 +2195,8 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         x, y = self.fetch_data_to_plot(sample_id, wavelength, n_samples)
         # Set threshold line
         if wavelength == settings.getWavelengthFluo():
-            baseline = y[0]
+            db = DatabaseHandler()
+            baseline = float(db.get_baseline(sample_id)[0][0])
             threshold = baseline * float(settings.getThresholdFluo())
             # Axis names
             widget.setLabel("left", text="Intensity (Fluorescence)")
@@ -2490,15 +2493,42 @@ from threading import Lock
 
 # Class for handling the database and storage of report info, data, and logging
 class DatabaseHandler:
+    # Class-level variable to store the chosen database path
+    db_path = None
+
     def __init__(self):
-        # Create the database folder if not there
-        base_path = os.path.normpath("C:/Colifast/APPDATA/")
-        if not os.path.exists(base_path):
-            os.mkdir(base_path)
-        # Initialize a database
-        db_path = os.path.join(base_path, "database.db")
-        self._initialize_database(db_path)
-        self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        # Ensure that the database path is selected only once
+        if DatabaseHandler.db_path is None:
+            base_path = os.path.normpath("C:/Colifast/APPDATA/")
+            if not os.path.exists(base_path):
+                os.mkdir(base_path)
+
+            # Gather all .db files in the directory, case-insensitive
+            db_files = [f for f in os.listdir(base_path) if f.lower().endswith('.db')]
+
+            # Determine which database to use
+            if not db_files:
+                # No .db files found, set a default path
+                DatabaseHandler.db_path = os.path.join(base_path, "database.db")
+                QMessageBox.warning(None, "No Database Found", f"No existing database was found. A new one will be created at {DatabaseHandler.db_path}.")
+            
+            elif len(db_files) == 1:
+                # Only one .db file found, so we use it directly
+                DatabaseHandler.db_path = os.path.join(base_path, db_files[0])
+                QMessageBox.information(None, "Single Database Found", f"Using database: {db_files[0]}")
+            
+            else:
+                # Multiple .db files found, prompt user to select one
+                selected_db_path, _ = QFileDialog.getOpenFileName(None, "Select Database File", base_path, "Database Files (*.db)")
+                if selected_db_path:
+                    DatabaseHandler.db_path = selected_db_path
+                else:
+                    DatabaseHandler.db_path = os.path.join(base_path, "database.db")
+                    QMessageBox.warning(None, "No Database Selected", f"No file was selected. Defaulting to {DatabaseHandler.db_path}.")
+
+        # Initialize the chosen database path
+        self._initialize_database(DatabaseHandler.db_path)
+        self.conn = sqlite3.connect(DatabaseHandler.db_path, check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.lock = Lock()
 
@@ -2516,47 +2546,40 @@ class DatabaseHandler:
         with self.lock:
             self.conn.close()
 
-    ## FUNTIONS THAT USES OTHER CLASS FUNCTIONS AND THUS DO NOT NEED TO BE LOCKED ##
-    # Function to store data 
+    # Functions for storing and retrieving data
     def store_data(self, *args):
-        query = "INSERT INTO SpectralData(series_id, sample_id, run_id, time_measured, \
-            wavelength_id, intensity, nm_bandwidth, readings_to_average_over) VALUES(?, ?, ?, ?, ?, ?, ?, ?)"
+        query = "INSERT INTO SpectralData(series_id, sample_id, run_id, time_measured, wavelength_id, intensity, nm_bandwidth, readings_to_average_over) VALUES(?, ?, ?, ?, ?, ?, ?, ?)"
         self.execute_query(query, *args)
-    
-    # Function to get the data series from this run all samples from the current bottle
+
+    def get_baseline(self, sample_id):
+        query = 'SELECT fluorescent_baseline FROM SampleInfo WHERE id = ?;'
+        return self.fetch_data(query, sample_id)
     def get_spectral_data_series(self, sample_id, wavelength):
-        # Fetch spectral data for a specific sample
         query = '''SELECT time_measured, intensity
-                    FROM SpectralData
-                    WHERE run_id IN (
-                        SELECT run_id
-                        FROM SampleInfo
-                        WHERE run_id IN(SELECT run_id FROM Sampleinfo WHERE id = ?) AND wavelength_id = ?
-                        ORDER BY sample_number DESC
-                    )
-                    ORDER BY id ASC'''
-
+                   FROM SpectralData
+                   WHERE run_id IN (
+                       SELECT run_id
+                       FROM SampleInfo
+                       WHERE run_id IN(SELECT run_id FROM Sampleinfo WHERE id = ?) AND wavelength_id = ?
+                       ORDER BY sample_number DESC
+                   )
+                   ORDER BY id ASC'''
         args = (sample_id, wavelength)
-        rows = self.fetch_data(query, *args)
-        return rows
+        return self.fetch_data(query, *args)
 
-    # Function to get a sample series with n samples
     def get_n_spectral_data_samples(self, sample_id, wavelength, n):
-        # Fetch spectral data for a specific sample/samples(n)
         query = '''SELECT time_measured, intensity
-                    FROM SpectralData
-                    WHERE sample_id IN (
-                        SELECT id
-                        FROM SampleInfo
-                        WHERE id >= ? AND wavelength_id = ?
-                        ORDER BY id ASC
-                        LIMIT ?
-                    )
-                    ORDER BY id ASC'''
-
+                   FROM SpectralData
+                   WHERE sample_id IN (
+                       SELECT id
+                       FROM SampleInfo
+                       WHERE id >= ? AND wavelength_id = ?
+                       ORDER BY id ASC
+                       LIMIT ?
+                   )
+                   ORDER BY id ASC'''
         args = (sample_id, wavelength, n)
-        rows = self.fetch_data(query, *args)
-        return rows
+        return self.fetch_data(query, *args)
 
     # Initialization of database upon class call, only creates file if file does not already exist
     def _initialize_database(self, db_path):
@@ -2575,12 +2598,7 @@ class DatabaseHandler:
 
                 # Prompt user for instrument information
                 serial, ok_pressed = QInputDialog.getText(None, "Enter Serial Number", "Serial Number:", QLineEdit.Normal, "")
-                if ok_pressed:
-                    instrument_serial_number = serial
-                else:
-                    instrument_serial_number = ""
-
-                # spectrophotometer_serial_number = input("Enter spectrophotometer serial number: ")
+                instrument_serial_number = serial if ok_pressed else ""
 
                 # Insert instrument information into InstrumentInfo table
                 cursor.execute('''
@@ -2588,8 +2606,7 @@ class DatabaseHandler:
                     VALUES (?)
                 ''', (instrument_serial_number,))
 
-
-                # Create RunInfo table
+                # Create additional tables
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS RunInfo (
                         id INTEGER PRIMARY KEY,
@@ -2608,7 +2625,6 @@ class DatabaseHandler:
                         spectrometer_serial_number TEXT NOT NULL
                     )
                 ''')
-                # Create SampleInfo table
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS SampleInfo (
                         id INTEGER PRIMARY KEY,
@@ -2625,11 +2641,8 @@ class DatabaseHandler:
                         sodium_thiosulfate BOOLEAN NOT NULL,
                         full_sample_time TEXT,
                         FOREIGN KEY (run_id) REFERENCES RunInfo (id)
-
                     )
                 ''')
-
-                # Create SpectralData table                                                         !!!!!NEED A SERIES IDENTIFYER TO ALLOW FOR MULTIPLE SERIES IN ONE RUN EG. GROWTH VS RAPID METHOD DATA!!!!
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS SpectralData (
                         id INTEGER PRIMARY KEY,
@@ -2640,11 +2653,12 @@ class DatabaseHandler:
                         wavelength_id INTEGER NOT NULL,
                         intensity REAL NOT NULL,
                         nm_bandwidth REAL NOT NULL,
-                		readings_to_average_over REAL NOT NULL,
-                        FOREIGN KEY (sample_id) REFERENCES SampleInfo (id)
+                        readings_to_average_over REAL NOT NULL,
+                        FOREIGN KEY (sample_id) REFERENCES SampleInfo (id),
                         FOREIGN KEY (run_id) REFERENCES RunInfo (id)
                     )
                 ''')
+
 
 ### Class to listen for signal from the gsm modem into the adu         ###
 ### in separate thread than both the gui and the workerthread (method) ###

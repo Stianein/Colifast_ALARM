@@ -107,7 +107,7 @@ def instrument_stop():
 
 # Functino for extracting full spectrum, or single wavelength reading, with the option of averaging over more readings and 
 # getting an average of the readings over a, nm_bandwidth of wavelengths
-def sfm_read(wavelength, store_data=True, nm_bandwidth = 1, readings_to_average_over=None, series_id=1):
+def sfm_read(wavelength, store_data=True, base_line=False, nm_bandwidth = 1, readings_to_average_over=None, series_id=1):
 	global plottr
 	global sampleID
 	
@@ -137,6 +137,13 @@ def sfm_read(wavelength, store_data=True, nm_bandwidth = 1, readings_to_average_
 			delay(5)
 			print("id from sfm read in method helper: ", sampleID)
 			plottr.emit(sampleID)
+
+		# When baseline is red - store it in the sample info parameter 
+		if base_line:
+			query = 'UPDATE SampleInfo SET fluorescent_baseline = ? WHERE id = ?;'
+			args = (data_point, sampleID)
+			db.execute_query(query, *args)
+
 		return data_point
 
 ## Collecting functions to reduce coding for frequently used functions ##

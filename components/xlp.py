@@ -38,10 +38,8 @@ def initialize(COM=None):
     if not COM:
         # Fetch pump variables
         COM = str(settings.getXLPcom())
-        print(COM, "NONE")
     else:
         COM = str(COM)
-        print(COM)
 
     global ser
     # Close previous initialiazations before opening a new one
