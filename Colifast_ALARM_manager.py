@@ -1128,12 +1128,14 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             self.moreOptions.hide()
             if ADUadv.instantiated:
                 self.advancedMenu.show()
+                self.show_specific_baseline.show()
                 self.hideCheckBox.show()
                 for box in self.checkBoxes_options:
                     box.show()
             else:
                 self.advancedMenu.hide()
                 self.hideCheckBox.hide()
+                self.show_specific_baseline.hide()
                 self.checkbox_hiding()
 
         else:
@@ -1441,7 +1443,6 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         rows = db.fetch_data(query, arg)
         # Check if there are done readings for the sample run, and make tabs for each wavelength in that case.
         try:
-            print("ROWS: ", rows)
             tab_name = ""
             if rows[0][0]:
                 # Loop over wavelengths to plot
@@ -1961,6 +1962,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                     # remove advanced menu bar
                     self.advancedMenu.hide()
                     self.hideCheckBox.hide()
+                    self.show_specific_baseline.hide()
                     self.checkbox_hiding()
                     # # Hide schedualer menu
                     # self.shedualerMenu.hide()
@@ -1996,6 +1998,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 # Show advanced features in menu
                 self.advancedMenu.show()
                 self.hideCheckBox.show()
+                self.show_specific_baseline.show()
                 # Show all the checkboxes when in advanced mode
                 for box in self.checkBoxes_options:
                     box.show()
@@ -2193,22 +2196,41 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         widget = self.create_plot_tab(tab_name)
         # fetch data
         x, y = self.fetch_data_to_plot(sample_id, wavelength, n_samples)
+        x = np.array([dt.timestamp() for dt in x])
         # Set threshold line
         if wavelength == settings.getWavelengthFluo():
+            # Fetch baselines for threshold plotting
             db = DatabaseHandler()
-            baseline = float(db.get_baseline(sample_id)[0][0])
-            threshold = baseline * float(settings.getThresholdFluo())
-            # Axis names
+            baselines = db.get_baselines(sample_id)
+            threshold_factor = float(settings.getThresholdFluo())
+            # Amount of samples to plot 
+            n_samp = db.get_n_samples_of_series(sample_id=sample_id, wavelength=wavelength)
+            # Set axis names
             widget.setLabel("left", text="Intensity (Fluorescence)")
+            try:
+                # Clean list of baselines 
+                base = [data[0] for data in baselines if data[0] is not None]
+                # If multiple samples is plotted - threshold should be moving acording to the underlying samples baseline reading
+                print("Show specific baseline: \t", self.show_specific_baseline.isChecked())
+                if (not n_samples == 1 or (n_samp == 1 and n_samples == "samples_in_current_run")) and self.show_specific_baseline.isChecked():
+                    self.threshold_staircase_line(base, threshold_factor, widget, x, len(base))
+                # If only one sample is to be plotted make threshold an infinite line of same height
+                else:
+                    baseline = db.fetch_data("SELECT fluorescent_baseline FROM SampleInfo WHERE id = ?", sample_id)[0][0]
+                    threshold = threshold_factor * baseline
+                    self.threshold_infinite_line(threshold, widget)
+            except:
+                print("No threshold line to plot")
+
         elif wavelength == settings.getWavelengthTurb():
             y = [(self.turb_FNU_calculator(intensity, sample_id)) for intensity in y]
             threshold = float(settings.getThresholdTurb())
             # Axis names
             widget.setLabel("left", text="Turbidity (FNU)")
-        try:
-            self.threshold_infinite_line(threshold, widget)
-        except:
-            print("No threshold line to plot")
+            try:
+                self.threshold_infinite_line(threshold, widget)
+            except:
+                print("No threshold line to plot")
         # Plot the data
         padding_factor = 1.5
         try:
@@ -2297,11 +2319,10 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     # Function that plots data (x as datetime, y as values) to the given widget (graph_widget)
     def plot_data(self, x, y, graph_widget, threshold=0):
         # Convert datetime to timestamps (float seconds since epoch)
-        x_timestamps = np.array([dt.timestamp() for dt in x])
         # Create the scatter plot item
         pen = pg.mkPen(color=QColor(self.color))
         scatter = pg.ScatterPlotItem(pen=pen, symbol="x", size=10)
-        scatter.setData(x_timestamps, y)  # Use the converted timestamps for x-axis
+        scatter.setData(x, y)  # Use the converted timestamps for x-axis
         # Add the scatter plot item to the plot widget
         graph_widget.addItem(scatter) 
         
@@ -2338,6 +2359,31 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         pen=pg.mkPen(color=QColor(self.contrast))
         threshold_line = pg.InfiniteLine(pos=threshold, angle=0, pen=pen)
         widget.addItem(threshold_line)
+
+    # Plot threshold line with staircase pattern
+    def threshold_staircase_line(self, baselines, threshold_factor, widget, x, n_samp):
+        pen = pg.mkPen(color=QColor(self.contrast))
+        
+        x_values = []
+        y_values = []
+
+        # Length of a sample's data points to know how far to stretch the threshold line
+        datapoints_in_single_sample  = int(len(x)/n_samp)
+
+        # Loop through each baseline to create staircase segments
+        for i, baseline in enumerate(baselines):
+            threshold = baseline * threshold_factor                     # Calculate the threshold value
+            x_i = datapoints_in_single_sample*i                         # threshold start index for sample
+            start_x = x[x_i] if x_i > 0 else x[x_i] - 43200             # x-value start point for sample (on first x reading - 1/2 day ) 
+            x_next_i = datapoints_in_single_sample*(i+1)                # threshold end index for sample
+            end_x = x[x_next_i] if x_next_i < len(x) else x[-1] + 43200 # x-value end point for sample (on last x reading + 1/2 day )                      
+            # Append points to create a horizontal line for each segment
+            x_values.extend([start_x, end_x])
+            y_values.extend([threshold, threshold])
+        
+        # Create a PlotDataItem with the x and y values for the staircase line
+        staircase_line = pg.PlotDataItem(x=x_values, y=y_values, pen=pen)
+        widget.addItem(staircase_line)  # Add the staircase line to the widget
 
 
 from fpdf import FPDF
@@ -2551,9 +2597,19 @@ class DatabaseHandler:
         query = "INSERT INTO SpectralData(series_id, sample_id, run_id, time_measured, wavelength_id, intensity, nm_bandwidth, readings_to_average_over) VALUES(?, ?, ?, ?, ?, ?, ?, ?)"
         self.execute_query(query, *args)
 
-    def get_baseline(self, sample_id):
-        query = 'SELECT fluorescent_baseline FROM SampleInfo WHERE id = ?;'
-        return self.fetch_data(query, sample_id)
+    def get_baselines(self, sample_id):
+        query = '''SELECT fluorescent_baseline
+                   FROM SampleInfo
+                   WHERE run_id IN (
+                       SELECT run_id
+                       FROM SampleInfo
+                       WHERE run_id IN(SELECT run_id FROM Sampleinfo WHERE id = ?)
+                       ORDER BY sample_number DESC
+                   )
+                   ORDER BY id ASC'''
+        series = self.fetch_data(query, sample_id)
+        return series
+    
     def get_spectral_data_series(self, sample_id, wavelength):
         query = '''SELECT time_measured, intensity
                    FROM SpectralData
@@ -2565,7 +2621,24 @@ class DatabaseHandler:
                    )
                    ORDER BY id ASC'''
         args = (sample_id, wavelength)
-        return self.fetch_data(query, *args)
+        series = self.fetch_data(query, *args)
+        return series
+    
+    def get_n_samples_of_series(self, sample_id, wavelength):
+        query = '''SELECT DISTINCT sd.sample_id
+                    FROM SpectralData AS sd
+                    WHERE sd.run_id IN (
+                        SELECT run_id
+                        FROM SampleInfo
+                        WHERE run_id IN (
+                            SELECT run_id
+                            FROM SampleInfo
+                            WHERE id = ?
+                        )
+                        AND wavelength_id = ?
+                    )'''
+        args = (sample_id, wavelength)
+        return len(self.fetch_data(query, *args))
 
     def get_n_spectral_data_samples(self, sample_id, wavelength, n):
         query = '''SELECT time_measured, intensity
