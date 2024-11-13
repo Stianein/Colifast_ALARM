@@ -6,7 +6,7 @@
 import sqlite3
 
 # Define the path to the database
-db_path = "C:/Colifast/APPDATA/uttesting.db"
+db_path = "C:/Colifast/APPDATA/Vækerød141.db"
 
 def update_fluorescent_baselines():
     # Connect to the SQLite database
@@ -26,6 +26,7 @@ def update_fluorescent_baselines():
     """
     cursor.execute(select_query)
     baseline_data = cursor.fetchall()
+    print(baseline_data)
 
     # Step 2: Update each sample's fluorescent_baseline in SampleInfo with the fetched intensity
     update_query = "UPDATE SampleInfo SET fluorescent_baseline = ? WHERE id = ?;"

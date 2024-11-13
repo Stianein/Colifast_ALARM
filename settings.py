@@ -423,7 +423,7 @@ def preset_values():
         storeThresholdFluo(1.5)
     # CHECKBOXES
     if not getCheckBoxStates():
-        storeCheckBoxStates(["0", "0", "0", "0", "0"])
+        storeCheckBoxStates(["0", "0", "0", "0", "0", "0"])
     # # Bottle size
     # if not getBottleSize():
     #     storeBottleSize(21)
@@ -464,6 +464,8 @@ def preset_values():
         storePumpSize(25000)
     if not getPassword("colifast", "colifast"):
         storePassword("colifast", "colifast")
+
+
 
 
 
