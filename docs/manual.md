@@ -1,4 +1,4 @@
-<style>
+<!-- <style>
 body {
     font-family: 'Calibri', sans-serif;
 }
@@ -32,7 +32,7 @@ th {
   z-index: 100;
 }
 
-</style>
+</style> -->
 
 # Colifast ALARM Instrument Manual
 
@@ -58,7 +58,7 @@ Project Link: [Colifast ALARM source code](https://github.com/Stianein/Colifast_
 
 This software is intended to operate the Colifast ALARM Instrument with its components. Method files can be loaded to run different setups, and you can create files to conduct specific tasks utilizing the components in a customized manner.
 
-<img src="../images/Colifast_ALARM.png" alt="Colifast ALARM Instrument" width="500">
+<img src="/Colifast_ALARM/images/Colifast_ALARM.png" alt="Colifast ALARM Instrument" width="500">
 
 
 ---
@@ -68,7 +68,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 [Back to ToC](#table-of-contents)
 
 1. **Bottle Size Setup:**
-    <img src="../images/bottle_size.png" alt="method_selection" class="enlargeable" width="500">
+    <img src="/Colifast_ALARM/images/bottle_size.png" alt="method_selection" class="enlargeable" width="500">
    - Navigate to the **Bottle Size** menu and set the size of the medium bottle (typically 21 samples per bottle). 
    - This value is directly responsible for stopping the instrument when there is no medium left.
    - The medium progress bar will display the amount of medium remaining.
@@ -81,7 +81,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 2. **Method Selection:**
 
-    <img src="../images/method_selection.png" alt="method_selection" class="enlargeable" width="400">
+    <img src="/Colifast_ALARM/images/method_selection.png" alt="method_selection" class="enlargeable" width="400">
 
    - Navigate to the **Method** section.
    - From the **Method File** drop-down menu, select the file you want the program to run.
@@ -131,7 +131,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 [Back to ToC](#table-of-contents)
 
-<img src="../images/history.png" alt="history_menu" class="enlargeable" width="400">
+<img src="/Colifast_ALARM/images/history.png" alt="history_menu" class="enlargeable" width="400">
 <br>
 
 - In the **History** menu, you can plot historical data based on date. 
@@ -144,7 +144,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 [Back to ToC](#table-of-contents)
 
-<img src="../images/report.png" alt="Report menu" class="enlargeable" width="350" style="float: right; margin-right: 40px;">
+<img src="/Colifast_ALARM/images/report.png" alt="Report menu" class="enlargeable" width="350" style="float: right; margin-right: 40px;">
 <br>
 <br>
 
@@ -172,7 +172,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 [Back to ToC](#table-of-contents)
 
-<img src="../images/ADU_adv.png" alt="ADU advanced" class="enlargeable" width="400" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
+<img src="/Colifast_ALARM/images/ADU_adv.png" alt="ADU advanced" class="enlargeable" width="400" style="float: right; margin-left: 15px; margin-right: 15px; margin-bottom: 15px;">
 
 <br>
 <br>
@@ -190,7 +190,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 [Back to ToC](#table-of-contents)
 
 - This page allow the user to load available spectrometers, and run some service tasks related to the spectrometer
-    <img src="../images/calibration.png" alt="spectrometer" class="enlargeable" width="300">
+    <img src="/Colifast_ALARM/images/calibration.png" alt="spectrometer" class="enlargeable" width="300">
 
 
     #### Calibrate
@@ -198,7 +198,7 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
     - This must be done using bottles containing the right turbidity solutions (0, 5, or 10 NTU). 
     - After the value is read the user can choose to **Save New Value to settings**, and thereby updating the calibration value.
     #### Spectrometer operation
-    <img src="../images/spectrometer.png" alt="spectrometer" class="enlargeable" width="400">
+    <img src="/Colifast_ALARM/images/spectrometer.png" alt="spectrometer" class="enlargeable" width="400">
 
     - **Readings to avrerage over** is a value that tells the equipment how many readings the spectrometer shall take before it calculates the average and returns the value, default 3 readings.
     - **Integration Time** is the time used by the spectrometer to scan a single reading in milliseconds, deafualt is set to 500 ms (0.5 s).
@@ -224,15 +224,15 @@ This software is intended to operate the Colifast ALARM Instrument with its comp
 
 <h3 id="syringe-pump">Syringe Pump</h3>
 
-<img src="../images/liquid_handling.png" alt="Liquid Handling" class="enlargeable" width="500">
+<img src="/Colifast_ALARM/images/liquid_handling.png" alt="Liquid Handling" class="enlargeable" width="500">
 
 - **Initialize** the pump at the chosen **Syringe COM port**.
 - Send a **Custom command** to the syringe pump using the text field, then press the button.
 - Click on the **valve head** to change port, the tooltip shows which port it will change to upon clicking, which is then the oposite of the current port.
 - The **Empty** button will make the plunger of the syringe pump go to the very top of the pump, therby emptying it. 
 - The **Fill** button will draw the plunger of the syringe to the lower most position therby filling it completely (25 ml).
-- The **up-arrow**  <img src="../icons/chevron-up.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;"> will allow you to dispense the volume set in **Syringe Volume (&#956;l)** at the set **Flowrate (&#956;l/s)**.
-- The **down-arrow**  <img src="../icons/chevron-down.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;"> will allow you to aspirate the volume set in **Syringe Volume (&#956;l)** at the set **Flowrate (&#956;l/s)**.
+- The **up-arrow**  <img src="/Colifast_ALARM/icons/chevron-up.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;"> will allow you to dispense the volume set in **Syringe Volume (&#956;l)** at the set **Flowrate (&#956;l/s)**.
+- The **down-arrow**  <img src="/Colifast_ALARM/icons/chevron-down.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;"> will allow you to aspirate the volume set in **Syringe Volume (&#956;l)** at the set **Flowrate (&#956;l/s)**.
 
 COM ports are external connections to computers, that once connected, works almost as integrel parts of the computer. The are therefor often very stable once set up, but if there is some error to the connection they will not propperly reset before the system has undergone a rebooting. That is why we often recommend a reboot when the system has trouble connecting to the syringe pump.
 
@@ -287,7 +287,7 @@ COM ports are external connections to computers, that once connected, works almo
 [Back to ToC](#table-of-contents)
 
 - Stopping
-    - The **Stop Button**  <img src="../icons/square.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;"> will abort the program imediately, only stalling if a component are midway through an operation. But if you wish to stop the run after the current sample has ended, right click the button and select **stop run after current sample has ended**.
+    - The **Stop Button**  <img src="/Colifast_ALARM/icons/square.svg" alt="stop button" style="width: 24px; height: auto; vertical-align: bottom;"> will abort the program imediately, only stalling if a component are midway through an operation. But if you wish to stop the run after the current sample has ended, right click the button and select **stop run after current sample has ended**.
 
 ---
 
