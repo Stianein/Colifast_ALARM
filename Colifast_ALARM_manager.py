@@ -322,15 +322,18 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.freq_box.setCurrentIndex(frequency)
         #self.sample_frequency_changer()
 
-        ## History menu ##
+        ## History & Report menu ##
         # update the chosen date
-        self.historyCalendar.selectionChanged.connect(self.handleDateSelection)
+        from functools import partial
+
+        self.historyCalendar.selectionChanged.connect(partial(self.handleDateSelection, self.historyCalendar))
+        self.reportCalendar.selectionChanged.connect(partial(self.handleDateSelection, self.reportCalendar))
         # Deactivate dates by default
         self.historyCalendar.setDateEditEnabled(False)  # Disable date editing for all dates
         # Date variable
         self.selected_date = None
         # Update calendar with dates with data upon launche
-        self.handleDateSelection()
+        self.handleDateSelection(calendar=self.historyCalendar)
         # Plot the chosen date from calendar when clicked
         self.plotBtn.clicked.connect(lambda: self.plot_historic_data(date=self.selected_date))
         # Create report for chosen date from calendar
@@ -1309,8 +1312,8 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             return False
 
     # Get the selected date
-    def handleDateSelection(self):
-        selected_date = self.historyCalendar.selectedDate()
+    def handleDateSelection(self, calendar):
+        selected_date = calendar.selectedDate()
         year = selected_date.year()
         month = selected_date.month()
         day = selected_date.day()
@@ -1461,6 +1464,9 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                         self.signal_to_plot(sample_id, wavelength[0], tab_name)
                     else:
                         self.signal_to_plot(sample_id, wavelength[0], tab_name, n_samples)
+        except ValueError as e:
+            string = str(e)
+            self.show_error_message(string)
         except IndexError:
             string = f"There seem to be no readings for the sample from {date}"
             self.show_error_message(string)
@@ -1490,86 +1496,92 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
     # Collect data from database to generate the report
     def data_collection_for_report(self, date):
-        fluo_wl = str(settings.getWavelengthFluo())
-        turb_wl = str(settings.getWavelengthTurb())
-
-        db = DatabaseHandler()
-        serial_number = db.fetch_data("SELECT instrument_serial_number FROM InstrumentInfo")[0][0]
-        RunInfo = db.fetch_data("SELECT * FROM RunInfo WHERE id IN(SELECT run_id FROM SampleInfo WHERE date = ?)", date)[0]
-        SampleInfo = db.fetch_data("SELECT * FROM SampleInfo WHERE date = ?", date)[0]
-        SpectralData = db.fetch_data("SELECT * FROM SpectralData WHERE sample_id IN(SELECT id FROM SampleInfo WHERE date = ?)", date)
-
-        print("1. TEST DATE: ", str(SampleInfo[3]))
-
-        # Create report and page
-        pdf = PDFReport(SampleInfo[3])
-        pdf.add_page()
-        ## FETCH INFO FROM DB AND PRINT TO PDF ##
-        # Technical info section
-        string = f"{24*int(RunInfo[-2])} h"
-        tech_info = ["1", serial_number, RunInfo[-1], os.path.basename(RunInfo[-3]), "Yes" if SampleInfo[-4] != 0 else "No", "Yes" if SampleInfo[-3] != 0 else "No",\
-        "Continuous" if 0 else string, RunInfo[-4].split(" - ")[0], RunInfo[-4].split(" - ")[1]]
-        info = ["Software Version", "Instrument Serial Number", "Spectrometer Serial Number", "Method File", "External Sample", "Sodium Thiosulfate", \
-        "Sample Frequency", "Target Bacteria", "Incubation Temperature"]
-        pdf.report_section("Technical Info", 45, info, tech_info)
-
-        # Run Info
-        run_info = [str(RunInfo[1]), str(RunInfo[2]), str(RunInfo[3]) ]
-        info = ["Bottle Number", "Bottle Size", "Run Start Time"]
-        pdf.report_section("Run Details", 102, info, run_info)
-
-        # Sample info
-        string_2 = f"{SampleInfo[1]}/{RunInfo[2]}"
-        sample_info = [string_2, str(SampleInfo[3][:-9]), str(SampleInfo[3][-8:]), fluo_wl, turb_wl]
-        info = ["Sample Number", "Date", "Sample Start Time", "Fluorescent Wavelength", "Turbidity Wavelength"]
-        pdf.report_section("Sample Details", 130, info, sample_info)
-
-        sample_id = db.fetch_data("SELECT id, sample_start_time FROM SampleInfo WHERE date = ?", date)
-        # Catch dates with multiple data instances, and prompt the user to select instance.
-        if len(sample_id) > 1:
-            items = [str(sid[1]) for sid in sample_id]
-            print(items)
-            item, ok_pressed = QInputDialog.getItem(self, "Multiple Samples", "Select the sample you want to plot:", items, 0, False)
-            if ok_pressed and item:
-                index = items.index(item)
-                print("index: ", index)
-            else:
-                return
-        else:
-            index = 0
-
-        sample_id = sample_id[index][0]
-
-        # Data to plot Info
-        table_data = db.fetch_data("SELECT intensity, time_measured, readings_to_average_over, nm_bandwidth FROM SpectralData \
-                             WHERE sample_id IN(SELECT id FROM SampleInfo WHERE date = ? AND wavelength_id = ?)", date, fluo_wl)
-        # Plot and Table
-        data = self.fetch_data_to_plot(sample_id, int(fluo_wl), 1)
-        if not data:
-            return
         try:
-            pdf.plot_section(data, table_data)
+            fluo_wl = str(settings.getWavelengthFluo())
+            turb_wl = str(settings.getWavelengthTurb())
+            print("DATE: ", date, type(date))
+
+            db = DatabaseHandler()
+            serial_number = db.fetch_data("SELECT instrument_serial_number FROM InstrumentInfo")[0][0]
+            RunInfo = db.fetch_data("SELECT * FROM RunInfo WHERE id IN(SELECT run_id FROM SampleInfo WHERE date = ?)", date)[0]
+            SampleInfo = db.fetch_data("SELECT * FROM SampleInfo WHERE date = ?", date)[0]
+            SpectralData = db.fetch_data("SELECT * FROM SpectralData WHERE sample_id IN(SELECT id FROM SampleInfo WHERE date = ?)", date)
+
+            # Create report and page
+            pdf = PDFReport(SampleInfo[3])
+            pdf.add_page()
+            ## FETCH INFO FROM DB AND PRINT TO PDF ##
+            # Technical info section
+            string = f"{24*int(RunInfo[-2])} h"
+            tech_info = ["1", serial_number, RunInfo[-1], os.path.basename(RunInfo[-3]), "Yes" if SampleInfo[-4] != 0 else "No", "Yes" if SampleInfo[-3] != 0 else "No",\
+            "Continuous" if 0 else string, RunInfo[-4].split(" - ")[0], RunInfo[-4].split(" - ")[1]]
+            info = ["Software Version", "Instrument Serial Number", "Spectrometer Serial Number", "Method File", "External Sample", "Sodium Thiosulfate", \
+            "Sample Frequency", "Target Bacteria", "Incubation Temperature"]
+            pdf.report_section("Technical Info", 45, info, tech_info)
+
+            # Run Info
+            run_info = [str(RunInfo[1]), str(RunInfo[2]), str(RunInfo[3]) ]
+            info = ["Bottle Number", "Bottle Size", "Run Start Time"]
+            pdf.report_section("Run Details", 102, info, run_info)
+
+            # Sample info
+            string_2 = f"{SampleInfo[1]}/{RunInfo[2]}"
+            sample_info = [string_2, str(SampleInfo[3][:-9]), str(SampleInfo[3][-8:]), fluo_wl, turb_wl]
+            info = ["Sample Number", "Date", "Sample Start Time", "Fluorescent Wavelength", "Turbidity Wavelength"]
+            pdf.report_section("Sample Details", 130, info, sample_info)
+
+            sample_id = db.fetch_data("SELECT id, sample_start_time FROM SampleInfo WHERE date = ?", date)
+            # Catch dates with multiple data instances, and prompt the user to select instance.
+            if len(sample_id) > 1:
+                items = [str(sid[1]) for sid in sample_id]
+                print(items)
+                item, ok_pressed = QInputDialog.getItem(self, "Multiple Samples", "Select the sample you want to plot:", items, 0, False)
+                if ok_pressed and item:
+                    index = items.index(item)
+                    print("index: ", index)
+                else:
+                    return
+            else:
+                index = 0
+
+            sample_id = sample_id[index][0]
+
+            # Data to plot Info
+            table_data = db.fetch_data("SELECT intensity, time_measured, readings_to_average_over, nm_bandwidth FROM SpectralData \
+                                WHERE sample_id IN(SELECT id FROM SampleInfo WHERE date = ? AND wavelength_id = ?)", date, fluo_wl)
+            # Plot and Table
+            data = self.fetch_data_from_single_sample(sample_id, int(fluo_wl))
+            if not data:
+                return
+
+            hours = [self.datetimestringler(stamp[1]) for stamp in table_data]
+            first_time = hours[0]
+            hours = [(date - first_time).total_seconds() / 3600 for date in hours]
+            print(hours)
+
+            pdf.plot_section(data, table_data, hours)
+
+            # Interpret the valence of the result and print to pdf
+            if SampleInfo[4] == 1:
+                result_f = "PRESSENT"
+            else:
+                result_f = "ABSENT"
+
+            if SampleInfo[5] == 1:
+                result_t = "POSITIVE"
+            else:
+                result_t = "NEGATIVE"
+            pdf.result_section(RunInfo[10], result_f, result_t)
+
+            # Create The right folder to store the report in
+            print("TEST DATE: ", str(SampleInfo[4]))
+            folder = self.create_year_month_folders(self.datetimestringler(str(SampleInfo[4])))
+            string_3 = f"/{date}.pdf"
+            pdf.output(folder + string_3)
+
         except:
-            return
-        # Interpret the valence of the result and print to pdf
-        if SampleInfo[4] == 1:
-            result_f = "PRESSENT"
-        else:
-            result_f = "ABSENT"
-
-        if SampleInfo[5] == 1:
-            result_t = "POSITIVE"
-        else:
-            result_t = "NEGATIVE"
-        pdf.result_section(RunInfo[10], result_f, result_t)
-
-        # Create The right folder to store the report in
-        print("TEST DATE: ", str(SampleInfo[4]))
-        folder = self.create_year_month_folders(self.datetimestringler(str(SampleInfo[4])))
-        string_3 = f"/{date}.pdf"
-        pdf.output(folder + string_3)
-
-
+            error = "Could not create Report from given date"
+            self.show_error_message(error)
     # Create folder system in the stored result/report folder if is is not there already. 
     def create_year_month_folders(self, date):
         # Extract year and month from the date
@@ -2151,9 +2163,13 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         self.startingTime.setText(txt)
 
     # set text in lastBactAlarm field
-    def bactAlarm(self, txt, ttd):
-        self.lastBactAlarm.setText(txt)
+    def bactAlarm(self, txt):
+        string = txt.split(",")
+        timeing = string[0]
+        ttd = string[1]
+        self.lastBactAlarm.setText(timeing)
         db = DatabaseHandler()
+        print(timeing, ttd)
         db.execute_query("UPDATE SampleInfo SET bact_pos = 1, time_to_detect= ? WHERE id = ?", ttd, self.sample_id)
 
     # set text in lastTurbAlarm field
@@ -2194,25 +2210,31 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         self.close_tab_by_name(tab_name)
         # Create tab and widget for the plot
         widget = self.create_plot_tab(tab_name)
-        # fetch data
-        x, y, amount, id = self.fetch_data_to_plot(sample_id, wavelength, n_samples)
-        x = np.array([dt.timestamp() for dt in x])
-        # Start plot function
-        self.plot_data(x, y, widget, wavelength, id, amount)
-
+        try:
+            # Start plot function
+            self.plot_data(widget, wavelength, sample_id, n_samples)
+        except ValueError as e:
+            pass
 
     # FETCH DATA FROM DATABASE
-    def fetch_data_to_plot(self, sample_id, wavelength, samples_to_plot):
+    def fetch_data_from_single_sample(self, sample_id, wavelength):
         db = DatabaseHandler()
-        # Fetch all samples in series
-        if not samples_to_plot:
-            rows, ids = db.get_spectral_data_series(sample_id, wavelength)
-        # Get all data n-samples forward from sample ID
-        else:
-            # Get the data from database
-            rows, ids= db.get_n_spectral_data_samples(sample_id, wavelength, samples_to_plot)
 
-        ids = [id[0] for id in ids]
+        # Fetch sample data, and the threshold from the specified sample_id
+        query_1= '''SELECT time_measured, intensity 
+                    FROM SpectralData 
+                    WHERE sample_id = ? AND wavelength_id = ?'''
+        query_2= '''SELECT fluorescent_baseline
+                    FROM SampleInfo 
+                    WHERE id = ?'''
+        args = sample_id, wavelength
+        
+        rows = db.fetch_data(query_1, *args)
+
+        if wavelength == settings.getWavelengthFluo():
+            baseline = db.fetch_data(query_2, sample_id)[0][0]
+        else:
+            baseline = None
         
         # Catch the instance of no data from a sample
         if not rows:
@@ -2228,9 +2250,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             time_measured.append(self.datetimestringler(elem[0]))
             intensity.append(elem[1])
 
-        # Convert the datetime variables to hours difference to make them plotable
-        # mod_time_measured = [(((t - time_measured[0]).total_seconds())/3600) for t in time_measured]
-        return time_measured, intensity, len(ids), min(ids)
+        return time_measured, intensity, baseline
 
 
     # CREATE TAB AND WIDGET FOR PLOT(tab name)
@@ -2281,72 +2301,76 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
 
     # Function that plots data (x as datetime, y as values) to the given widget (graph_widget)
-    def plot_data(self, x, y, graph_widget, wavelength, sample_id, n_samp):
+    def plot_data(self, graph_widget, wavelength, sample_id, n_samp):
         # Access database
         db = DatabaseHandler()
+
         # Amount of samples to plot
         if not n_samp:
-            n_samples = db.get_n_samples_of_series(sample_id=sample_id, wavelength=wavelength)
+            ids = db.get_ids_from_samples_of_series(sample_id=sample_id, wavelength=wavelength)
+            n_samples = len(ids)
         else:
             n_samples = n_samp
-        print("\n\n", n_samples, "\n\n")
-        datapoints_in_single_sample  = int(len(x)/n_samples)
-        # Fetch threshold
-        threshold = self.get_threshold_for_wavelength(wavelength, sample_id-1, n_samples)
-        print("THreshold: \n", threshold)
+            ids = db.get_n_spectral_data_samples(sample_id, wavelength, n_samples)
 
-        # If turbidity data is to be plotted, convert the intensities to FNU values
-        if wavelength == settings.getWavelengthTurb():
-            y = [(self.turb_FNU_calculator(intensity, sample_id)) for intensity in y]
-            graph_widget.setLabel("left", text="Turbidity (FNU)")
-            self.threshold_infinite_line(threshold, graph_widget)          
-            print("\nturbidity")
-            
-        else:
-            print("\n NOT TURB")
-            graph_widget.setLabel("left", text="Fluorescent intensity")
-            if n_samples > 1 and self.show_specific_baseline.isChecked():
-                self.threshold_staircase_line(threshold, graph_widget, x, datapoints_in_single_sample)
-            else:
-                # Use the mean as the threshold
-                from statistics import mean
-                threshold = mean(threshold)
-                self.threshold_infinite_line(threshold, graph_widget)          
-
-        # Lists to store points for below and above threshold segments
+        # Lists to store points for plotting
         x_below, y_below = [], []
         x_above, y_above = [], []
 
-        # Loop through x and y points and adjust the threshold as the x values progress
-        for i in range(len(x)):
 
-            # Collect points within this segment, separating based on the threshold
-            x_val = x[i]
-            y_val = y[i]
+        # Initialize loop variables
+        mean_threshold = 0
+        plot_mean_threshold = True
 
-            if isinstance(threshold, list):
-                print("\nTHreshold is list")
-                if len(threshold)>1:
-                    print("\nThreshold is longer than 1")
-                    # Determine the current threshold based on the segment index in baselines
-                    segment_index = i // datapoints_in_single_sample
-                    if i % datapoints_in_single_sample == 0:
-                        thresh = threshold[segment_index]
+        # Loop through each sample
+        for id in ids:
+            # Fetch the data for the current sample
+            try:
+                x, y, baseline = self.fetch_data_from_single_sample(id, wavelength)
+            except ValueError as e:
+                pass
+
+            x = np.array([dt.timestamp() for dt in x])
+
+            # Determine x range for each sample for the threshold line
+            x_start, x_end = x[0], x[-1]  # First and last x-values in the sample
+
+
+            # If turbidity data is to be plotted, convert y values to FNU
+            if wavelength == settings.getWavelengthTurb():
+                y = [self.turb_FNU_calculator(intensity, sample_id) for intensity in y]
+                graph_widget.setLabel("left", text="Turbidity (FNU)")
+                threshold = float(settings.getThresholdTurb())
                 
-                if y_val <= thresh:
-                    x_below.append(x_val)
-                    y_below.append(y_val)
-                else:
-                    x_above.append(x_val)
-                    y_above.append(y_val)
-
+                # Set an infinite threshold line for turbidity
+                self.threshold_infinite_line(threshold, graph_widget)
+                
             else:
+                # For fluorescence, check if we need multiple thresholds
+                graph_widget.setLabel("left", text="Fluorescent intensity")
+                threshold = float(baseline) * float(settings.getThresholdFluo())
+                
+                if n_samples > 1 and self.show_specific_baseline.isChecked():
+                    # Create a step threshold line based on the threshold for each sample
+                    self.threshold_staircase_line(threshold, graph_widget, x_start, x_end)
+                    plot_mean_threshold = False
+                else:
+                    # Use the mean threshold if a single threshold applies
+                    mean_threshold += threshold
+                    
+
+            # Loop through the data points to classify points as above or below threshold
+            for x_val, y_val in zip(x, y):
                 if y_val <= threshold:
                     x_below.append(x_val)
                     y_below.append(y_val)
                 else:
                     x_above.append(x_val)
                     y_above.append(y_val)
+        
+        if plot_mean_threshold:
+            mean_threshold = mean_threshold/len(ids)
+            self.threshold_infinite_line(mean_threshold, graph_widget)
 
         # Scatter plot for points below or equal to the threshold
         pen = pg.mkPen(color=QColor(self.color))
@@ -2376,6 +2400,14 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         y_axis.setPen(color=color)
 
         graph_widget.autoRange()
+        
+        # Capture image of plot for future updates to the report feature of the SoftWare
+        # def capture_plot():
+        #     screenshot = graph_widget.grab()
+        #     screenshot.save('plot_image_screenshot.png')
+        
+        # QTimer.singleShot(100, capture_plot)
+
 
         # Switch to the plot tab to display the graph, if other menus are chosen
         self.backBtn.click()
@@ -2389,7 +2421,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             db = DatabaseHandler()
             print("\nN_samp from get thresh:", n_samples)
             baselines = db.get_baselines(sample_id, n_samp=n_samples)
-            base = [data[0] if data[0] is not None else 0 for data in baselines]
+            base = [data[0] for data in baselines if data[0] is not None] #else 0 for data in baselines]
             print("\n\nBASELINES:", baselines)
             print("\n\nBASE:", base)
             threshold_factor = float(settings.getThresholdFluo())
@@ -2409,26 +2441,13 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         widget.addItem(threshold_line)
 
     # Plot threshold line with staircase pattern
-    def threshold_staircase_line(self, thresholds, widget, x, datapoints_in_single_sample):
+    def threshold_staircase_line(self, threshold, widget, x_start, x_end):
         pen = pg.mkPen(color=QColor(self.contrast))
         
-        x_values = []
-        y_values = []  
+        # the horisontal line represented by x and y values
+        x_values = [x_start, x_end]
+        y_values = [threshold, threshold]
 
-        print("THreshold inside func: \n", thresholds)
-
-
-        # Loop through each baseline to create staircase segments
-        for i, baseline in enumerate(thresholds):
-            x_i = datapoints_in_single_sample*i                         # threshold start index for sample
-            start_x = x[x_i] if x_i > 0 else x[x_i] - 43200             # x-value start point for sample (on first x reading - 1/2 day ) 
-            x_next_i = datapoints_in_single_sample*(i+1)                # threshold end index for sample
-            end_x = x[x_next_i] if x_next_i < len(x) else x[-1] + 43200 # x-value end point for sample (on last x reading + 1/2 day )                      
-            # Append points to create a horizontal line for each segment
-            x_values.extend([start_x, end_x])
-            y_values.extend([thresholds[i], thresholds[i]])
-        print("\nstaircase:", x_values, "\n\n", y_values)
-        
         # Create a PlotDataItem with the x and y values for the staircase line
         staircase_line = pg.PlotDataItem(x=x_values, y=y_values, pen=pen)
         widget.addItem(staircase_line)  # Add the staircase line to the widget
@@ -2506,43 +2525,46 @@ class PDFReport(FPDF):
             self.ln()  # Move to the next row
 
     # Function to create plot in report
-    def plot_section(self, data, table_data):
-        try:
-            global path
-            # Header
-            self.set_font_size(12)
-            self.set_y(self.h-110)
-            self.cell(0, 5, "Growth Curve", 0, 1)
-            self.draw_line()
+    def plot_section(self, data, table_data, timing):
+        # try:
+        global path
+        # Header
+        self.set_font_size(12)
+        self.set_y(self.h-110)
+        self.cell(0, 5, "Growth Curve", 0, 1)
+        self.draw_line()
 
-            # Limit and threshold values
-            alarm_threshold = float(settings.getThresholdFluo()) * float(data[1][0])
-            maximum = max(data[1])
-            top = maximum * 1.1 if maximum > 30000 else 30000
-            width = max(data[0]) * 1.1
-            timing = [int(x) for x in data[0]]
-            # Generate plot
-            plt.plot(timing, data[1], '-^')
-            plt.axhspan(alarm_threshold, top, color='red', alpha=0.8)
-            plt.xlim(0, width)
-            plt.ylim(0, top)
-            plt.xlabel('Incubation Time (h)')
-            plt.ylabel('Fluorescence')
-            # Threshold value
-            plt.text(width, alarm_threshold + 200, 'Threshold: {}'.format(round(alarm_threshold, 1)), fontsize=10, ha='right')
-            # Save plot to temporary image file
-            plot_path = resource_path(os.path.join(path, settings.getResultFolder() + "plot_image.png"))
-            plt.savefig(plot_path, format='png')
-            # Clear the plot to prevent it from being displayed
-            plt.clf()
-            # Print the image file to the PDF
-            self.image(plot_path, x=10, y=(self.h-103), w=100, h=75)
-            # Delete plot image
-            os.remove(plot_path)
-            # Make table with data
-            self.table_section(200, table_data, timing)
-        except:
-            return
+        # Limit and threshold values
+        alarm_threshold = float(settings.getThresholdFluo()) * float(data[1][0])
+        maximum = max(data[1])
+        top = maximum * 1.1 if maximum > 30000 else 30000
+        x_min = data[0][0]
+        x_max = data[0][-1]
+        timing = [round(x, 2) for x in timing]
+        x_time = [x for x in data[0]]
+        print("timing:\t", timing)
+        # Generate plot
+        plt.plot(x_time, data[1], '-^')
+        plt.axhspan(alarm_threshold, top, color='red', alpha=0.8)
+        plt.xlim(x_min, x_max)
+        plt.ylim(0, top)
+        plt.xlabel('Incubation Time (h)')
+        plt.ylabel('Fluorescence')
+        # Threshold value
+        plt.text(x_max, alarm_threshold + 200, 'Threshold: {}'.format(round(alarm_threshold, 1)), fontsize=10, ha='right')
+        # Save plot to temporary image file
+        plot_path = resource_path(os.path.join(path, settings.getResultFolder() + "plot_image.png"))
+        plt.savefig(plot_path, format='png')
+        # Clear the plot to prevent it from being displayed
+        # plt.clf()
+        # Print the image file to the PDF
+        self.image(plot_path, x=10, y=(self.h-103), w=100, h=75)
+        # Delete plot image
+        os.remove(plot_path)
+        # Make table with data
+        self.table_section(200, table_data, timing)
+        # except:
+        #     return
     # Function to create result section
     def result_section(self, type, result_fluo, result_turb):
         self.set_fill_color(211, 211, 211)
@@ -2581,7 +2603,6 @@ class PDFReport(FPDF):
         string = f"COLIFAST {self.date}"
         self.cell(0, 10, string, 0, 0, 'C')
 
-
 import sqlite3
 from threading import Lock
 
@@ -2609,7 +2630,6 @@ class DatabaseHandler:
             elif len(db_files) == 1:
                 # Only one .db file found, so we use it directly
                 DatabaseHandler.db_path = os.path.join(base_path, db_files[0])
-                QMessageBox.information(None, "Single Database Found", f"Using database: {db_files[0]}")
             
             else:
                 # Multiple .db files found, prompt user to select one
@@ -2670,73 +2690,44 @@ class DatabaseHandler:
         print("\n\nSERIES\n", series)
         return series
     
-    def get_spectral_data_series(self, sample_id, wavelength):
-        query = '''SELECT time_measured, intensity
-                   FROM SpectralData
-                   WHERE run_id IN (
-                       SELECT run_id
-                       FROM SampleInfo
-                       WHERE run_id IN(SELECT run_id FROM Sampleinfo WHERE id = ?) AND wavelength_id = ?
-                       ORDER BY sample_number DESC
-                   )
-                   ORDER BY id ASC'''
-        args = (sample_id, wavelength)
-        query_2 = '''SELECT DISTINCT sample_id
-                   FROM SpectralData
-                   WHERE run_id IN (
-                       SELECT run_id
-                       FROM SampleInfo
-                       WHERE run_id IN(SELECT run_id FROM Sampleinfo WHERE id = ?) AND wavelength_id = ?
-                       ORDER BY sample_number DESC
-                   )
-                   ORDER BY id ASC'''
-        ids = self.fetch_data(query_2, *args)
-        series = self.fetch_data(query, *args)
-        return series, ids
     
-    # def get_n_samples_of_series(self, sample_id, wavelength):
-    #     query = '''SELECT DISTINCT sd.sample_id
-    #                 FROM SpectralData AS sd
-    #                 WHERE sd.run_id IN (
-    #                     SELECT run_id
-    #                     FROM SampleInfo
-    #                     WHERE run_id IN (
-    #                         SELECT run_id
-    #                         FROM SampleInfo
-    #                         WHERE id = ?
-    #                     )
-    #                     AND wavelength_id = ?
-    #                 )'''
-    #     args = (sample_id, wavelength)
-    #     return len(self.fetch_data(query, *args))
+    def get_ids_from_samples_of_series(self, sample_id, wavelength):
+        query = '''SELECT DISTINCT sd.sample_id
+                    FROM SpectralData AS sd
+                    WHERE sd.run_id IN (
+                        SELECT run_id
+                        FROM SampleInfo
+                        WHERE run_id IN (
+                            SELECT run_id
+                            FROM SampleInfo
+                            WHERE id = ?
+                            AND fluorescent_baseline IS NOT NULL
+                        )
+                        AND wavelength_id = ?
+                    )'''
+        args = (sample_id, wavelength)
+        ids = self.fetch_data(query, *args)
+        ids = [id[0] for id in ids]
+        return ids
 
-    def get_n_spectral_data_samples(self, sample_id, wavelength, n):
-        query = '''SELECT time_measured, intensity
+    def get_n_spectral_data_samples(self, sample_id, wavelength, n):        
+        query = '''SELECT DISTINCT sample_id
                    FROM SpectralData
                    WHERE sample_id IN (
                        SELECT id
                        FROM SampleInfo
                        WHERE id >= ? AND wavelength_id = ?
-                       ORDER BY id ASC
-                       LIMIT ?
-                   )
-                   ORDER BY id ASC'''
-        
-        query_2 = '''SELECT DISTINCT sample_id
-                   FROM SpectralData
-                   WHERE sample_id IN (
-                       SELECT id
-                       FROM SampleInfo
-                       WHERE id >= ? AND wavelength_id = ?
+                       AND fluorescent_baseline IS NOT NULL
                        ORDER BY id ASC
                        LIMIT ?
                    )
                    ORDER BY id ASC'''
 
         args = (sample_id, wavelength, n)
-        series = self.fetch_data(query, *args)
-        ids = self.fetch_data(query_2, *args)
-        return series, ids
+        ids = self.fetch_data(query, *args)
+        ids = [id[0] for id in ids]
+        return ids
+        # return series, ids
 
     # Initialization of database upon class call, only creates file if file does not already exist
     def _initialize_database(self, db_path):
