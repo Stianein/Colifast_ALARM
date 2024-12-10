@@ -181,9 +181,9 @@ def LogOn():
 		status.emit("Logging on " + device + " failed")
 		raise ErrorMsg(device + " not found")
 		
-# now time string
+# now time string - function to format date nice and consistantly for the gui alarm display
 def now():
-	now = datetime.datetime.now().strftime('%H:%M %m/%d')
+	now = datetime.datetime.now().strftime('%H:%M %d. %b')
 	return now
 
 # delay function

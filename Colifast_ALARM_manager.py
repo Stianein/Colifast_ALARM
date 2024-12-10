@@ -59,6 +59,7 @@ from python_designer_files.ADUadv_generator import ADUadv
 from python_designer_files.spectrometer import Ui_Form as spectrometer_window
 from python_designer_files.LogIn import Ui_Dialog as Ui_login
 from python_designer_files.Error_message_dialog import Ui_Dialog as Ui_ErrorDialog
+from python_designer_files.carousel import CarouselViewer
 import python_designer_files.clock_time_picker as time_pckr
 import python_designer_files.editor as editor
 
@@ -158,6 +159,15 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.worker_thread = WorkerThread(self)
         self.scheduler = BackgroundScheduler()
         self.mobileRemoteToggle = GSM_listner(self)
+
+        # Create an instance of CarouselViewer
+        self.carousel = CarouselViewer()
+        # Put the viewer into a layout and display it in the reports widget
+        layout = QVBoxLayout()
+        layout.addWidget(self.carousel)
+        container = self.reports
+        container.setLayout(layout)
+
         # Status bar signal from worker thread long running bact sample
         self.worker_thread.status_message.connect(self.setStatus)
         # Update plot signal from worker thread to plot data in GUI
@@ -349,6 +359,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Hide schedualer menu
         # self.shedualerMenu.hide()
 
+
         ## Method File ##
         # populate the method file drop-down #
         self.methodDropDown()
@@ -428,9 +439,9 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
             # Prompt the user for delay before start if that option is checked
             if self.delayStartTime.checkState():
                 dialog = TimeSelectorDialog(self)
-                start_delay = dialog.get_chosen_time()
-                if start_delay:
-                    print("Start time:", start_delay)
+                start_time = dialog.get_chosen_time()
+                if start_time:
+                    print("Start time:", start_time)
                 # Abort if the user exits the delay window
                 else:
                     # ReCheck the button as the click UnChecked it, but the user aborted
@@ -448,12 +459,15 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
             # Start run with delay
             if self.delayStartTime.checkState():
-                self.sample_scheduler(start_time=start_delay)
+                self.sample_scheduler(start_time=start_time)
                 string = f"Delay first sample, {self.datetimestringler(start_delay)}"
                 self.setStatus(string)
             # Start run without delay
             else:
-                self.sample_scheduler(start_time=datetime.datetime.now())
+                start_time=datetime.datetime.now()
+                self.sample_scheduler(start_time=start_time)
+            
+            self.timer(start_time)
 
 
         # TURN OFF - STOP
@@ -645,9 +659,9 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                 if self.stop_after_current_sample:
                     # Reset the stop after current sample parameter
                     self.stop_after_current_sample = False
-                    self.setStatus("The run was stopped now, after ended sample")
-                    # Print awaiting remote start to status browser if there are more samples left in the medium container
-                    if settings.getRemaining() > 0:
+                    self.setStatus("The run was stopped, after ended sample")
+                    # Print awaiting remote start to status browser if there are more samples left in the medium container, and the remote start is turned on.
+                    if settings.getRemaining() > 0 and settings.getRemoteStart():
                         time.sleep(1)
                         self.setStatus("Awaiting remote start...")
                         current_text = self.startingTime.toPlainText()
@@ -728,7 +742,8 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                 sample_number = 1
                 print(sample_number, "set to 1")
         # Timing
-        timing = self.datetimestringler(datetime.datetime.now())
+        start = datetime.datetime.now()
+        timing = self.datetimestringler(start)
         ## STORE SAMPLE INFO FOR THE CURRENT SAMPLE ##
         query = "INSERT INTO SampleInfo (sample_number, run_id, date, sample_start_time, external_sample, sodium_thiosulfate) VALUES (?, ?, ?, ?, ?, ?)"
         args = (sample_number, self.run_id, timing[:10], timing, settings.getExtSamp(), settings.getSodiumThio())
@@ -745,6 +760,35 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.log.info(string_1)
         string_2 = f"Sample id:\t\t\t{self.sample_id}\nStart time:\t\t\t{timing}"
         self.log.info(string_2)
+
+
+    # Create and start a timer for counting the duration of the method run - visualisation that shows the program is active
+    def timer(self, start):
+        # Start the timer
+        self.method_timer = QTimer(self)
+        self.method_timer.timeout.connect(lambda: self.update_timer(start))
+        self.method_timer.start(1000)  # Update every second
+
+
+    # counter update function 
+    def update_timer(self, start):
+        # If method still running, update
+        if self.worker_thread and self.worker_thread.isRunning():
+            # Update the current time
+            elapsed_time = datetime.datetime.now() - start
+            # Convert elapsed time to hours, minutes, and seconds
+            total_seconds = int(elapsed_time.total_seconds())
+            hours, remainder = divmod(total_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+
+            # Display the formatted time
+            formatted_time = f"    {hours:02}:{minutes:02}:{seconds:02}"
+            self.timeCounter.setStyleSheet("text-align: center;")
+            self.timeCounter.setPlainText(formatted_time)
+        else:
+            # Stop the timer when the worker finishes
+            self.timeCounter.setPlainText("")
+            self.method_timer.stop()
 
 
     # Function to start the Logger, and store relevant data in run info - executed at start of scheduler
@@ -1037,6 +1081,13 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 widget.close()
             except:
                 continue
+        
+    # Load the reports to the carousel
+    def load_reports_view(self, date=None, n=10):
+        self.carousel.current_index = int(n/2)
+        self.carousel.load_images_around_date(date)
+        self.carousel.update_scene()
+
 
     ## Menu's and Animations ##
     # Toggle side menu visability #
@@ -1046,7 +1097,6 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
         # Temporarily disable layout updates
         self.setUpdatesEnabled(False)
-
 
         self.stackedWidget.setCurrentIndex(0)
         self.stackedWidget_1.setCurrentIndex(0)
@@ -1060,6 +1110,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             index = 2
         elif menu == "report":
             index = 3
+            self.stackedWidget_1.setCurrentIndex(1)
 
         """Toggle between different option menus contained in the QStackedWidget."""
         if self.moreOptions.isHidden():
@@ -1099,7 +1150,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             self.stackedWidget_1.setCurrentIndex(0)
         elif pressed_button == self.manualBtn:
             self.stackedWidget.setCurrentIndex(0)
-            self.stackedWidget_1.setCurrentIndex(1)
+            self.stackedWidget_1.setCurrentIndex(2)
         else:
             self.stackedWidget.setCurrentIndex(1)
             self.stackedWidget.setCurrentIndex(index)
@@ -1288,7 +1339,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
         list_of_dates_with_data = self.find_dates_with_data_from_db()
         if list_of_dates_with_data:
-            print(list_of_dates_with_data)
+            # print(list_of_dates_with_data)
 
             # Check data availability for specific dates
             for date_with_data, pos in list_of_dates_with_data:
@@ -1319,6 +1370,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         day = selected_date.day()
         date_string = f"{year}-{month:02d}-{day:02d}"
         self.selected_date = date_string
+        self.load_reports_view(date_string)
         self.updateCalendar()
 
     # CheckBox that activates full series - it will thus plot all samples from a run in any given run, based on the data in th database
@@ -1496,6 +1548,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
     # Collect data from database to generate the report
     def data_collection_for_report(self, date):
+        from pdf2image import convert_from_path
         try:
             fluo_wl = str(settings.getWavelengthFluo())
             turb_wl = str(settings.getWavelengthTurb())
@@ -1576,12 +1629,23 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             # Create The right folder to store the report in
             print("TEST DATE: ", str(SampleInfo[4]))
             folder = self.create_year_month_folders(self.datetimestringler(str(SampleInfo[4])))
-            string_3 = f"/{date}.pdf"
-            pdf.output(folder + string_3)
+            string_3 = f"{date}.pdf"
+            pdf_path = os.path.join(folder, string_3)
+            pdf.output(pdf_path)
+            print(pdf_path)
+            report_image = convert_from_path(pdf_path, dpi=150)
+
+            # Check if images for this PDF already exist
+            pdf_base_name = os.path.basename(pdf_path).replace('.pdf', '')
+            image_name = f"{pdf_base_name}.png"
+            image_path = os.path.join(base_dir,"Reports", "report_images", image_name)
+            print(image_path)
+            report_image[0].save(image_path, "PNG")
 
         except:
             error = "Could not create Report from given date"
             self.show_error_message(error)
+
     # Create folder system in the stored result/report folder if is is not there already. 
     def create_year_month_folders(self, date):
         # Extract year and month from the date
@@ -2169,7 +2233,6 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         ttd = string[1]
         self.lastBactAlarm.setText(timeing)
         db = DatabaseHandler()
-        print(timeing, ttd)
         db.execute_query("UPDATE SampleInfo SET bact_pos = 1, time_to_detect= ? WHERE id = ?", ttd, self.sample_id)
 
     # set text in lastTurbAlarm field

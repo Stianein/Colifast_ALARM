@@ -40,6 +40,10 @@ QPushButton,
     line-height: 2;
 }
 
+#timeCounter{ 
+    text-align: center;
+}
+
 /* The tooltip and progress bar color - meant to create a contrast */
 QComboBox QAbstractItemView {
     background-color: PLACEHOLDER_BACKGROUND_COLOR;
