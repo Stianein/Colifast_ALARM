@@ -1903,8 +1903,12 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
     # Update the medium level - samples left
     def progBar_clicked(self):
-        self.show_error_message("Have you inserted a new media bottle?")
-        self.update_medium_progress_bar()
+        # You cant update progress bar as long as a method is running - it might mess up variable values used by the program
+        if self.startNewMethod.isChecked():
+            return
+        accept = self.show_error_message("Have you inserted a new media bottle?")
+        if accept:
+            self.update_medium_progress_bar(True)
 
     # Function to open the custom error message window
     def show_error_message(self, error_message):

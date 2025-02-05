@@ -1,7 +1,19 @@
 @echo off
-REM Set the path to your python.exe
-REM Update the following line with the correct path to your python.exe
-set PYTHON_EXECUTABLE=python.exe
+:: Check for administrative privileges
+:: Try to create a folder in a restricted location to verify if the script has admin rights
+mkdir "%SystemRoot%\System32\TempFolder" >nul 2>&1
+if '%errorlevel%' NEQ '0' (
+    echo Requesting administrative privileges...
+    :: Re-run the script with administrative privileges
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b
+)
+
+:: Clean up the temporary folder if created
+rmdir "%SystemRoot%\System32\TempFolder" >nul 2>&1
+
+:: Set the path to python.exe relative to the batch file location
+set "PYTHON_EXECUTABLE=%~dp0python.exe"
 
 REM Define the Python command to execute
 set PYTHON_COMMAND=from seabreeze import os_setup;os_setup.main()
