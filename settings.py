@@ -207,7 +207,17 @@ def getBottleSizeStep():
     settings = QSettings("Colifast", "ALARM")
     state = settings.value('BottleStepSize')
     return(state)
-# Checkboxes - and ther hide state in user mode
+# Automate report generation - checkbox state
+def storeAutoReport(state):
+    settings = QSettings("Colifast", "ALARM")  # ("Company", "Product")
+    settings.setValue('autoReport', state)
+def getAutoReport():
+    settings = QSettings("Colifast", "ALARM")
+    state = settings.value('autoReport')
+    return(state)
+
+
+# Checkboxes - and their hide state in user mode
 def storeCheckBoxStates(states):
     settings = QSettings("Colifast", "ALARM")  # ("Company", "Product")
     settings.setValue('checkboxstate', states)

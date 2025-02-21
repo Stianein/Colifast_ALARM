@@ -892,7 +892,7 @@
              <bool>true</bool>
             </property>
             <property name="currentIndex">
-             <number>0</number>
+             <number>3</number>
             </property>
             <widget class="QWidget" name="bottleOptions_1">
              <property name="sizePolicy">
@@ -2387,6 +2387,31 @@ color: grey;</string>
                          <property name="text">
                           <string>Create Report</string>
                          </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QFrame" name="frame_4">
+                         <property name="frameShape">
+                          <enum>QFrame::StyledPanel</enum>
+                         </property>
+                         <property name="frameShadow">
+                          <enum>QFrame::Raised</enum>
+                         </property>
+                         <layout class="QVBoxLayout" name="verticalLayout_39">
+                          <property name="leftMargin">
+                           <number>30</number>
+                          </property>
+                          <item>
+                           <widget class="QCheckBox" name="reportFile">
+                            <property name="layoutDirection">
+                             <enum>Qt::LeftToRight</enum>
+                            </property>
+                            <property name="text">
+                             <string> Automatically generate report file</string>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
                         </widget>
                        </item>
                       </layout>

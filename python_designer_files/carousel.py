@@ -128,7 +128,7 @@ class CarouselViewer(QGraphicsView):
                             center_y - item.pixmap().height() * scale / 2)
                 
 
-    def load_images_around_date(self, selected_date_str="2024-11-04", n=10):
+    def load_images_around_date(self, selected_date_str=None, n=10):
         """
         Loads n images around the selected date from the given image folder.
         
@@ -136,7 +136,11 @@ class CarouselViewer(QGraphicsView):
         :param n: The number of images to load around the selected date.
         :updates the list of images variable of the class, self.image_paths
         """
-        
+
+        if selected_date_str is None:
+            # Default to today's date in "YYYY-MM-DD" format
+            selected_date_str = datetime.datetime.today().strftime('%Y-%m-%d')
+        print("selected date: ", selected_date_str)
         image_folder = "C:\\Colifast\\Reports\\report_images"
 
         # Parse the selected date
@@ -165,26 +169,27 @@ class CarouselViewer(QGraphicsView):
         # Sort images by their date
         image_dates.sort(key=lambda x: x[0])
 
-        # Find the closest image to the selected date
-        closest_index = 0
-        closest_diff = abs(image_dates[0][0] - selected_date)
-        
-        for i, (image_date, _) in enumerate(image_dates):
-            diff = abs(image_date - selected_date)
-            if diff < closest_diff:
-                closest_diff = diff
-                closest_index = i
-        
-        # Now we have the closest image, let's fetch n images surrounding it
-        start_index = max(0, closest_index - n // 2)
-        end_index = min(len(image_dates), start_index + n)
-        
-        # Extract the image paths for the selected range
-        for i in range(start_index, end_index):
-            image_paths.append(image_dates[i][1])
+        if image_dates:
+            # Find the closest image to the selected date
+            closest_index = 0
+            closest_diff = abs(image_dates[0][0] - selected_date)
+            
+            for i, (image_date, _) in enumerate(image_dates):
+                diff = abs(image_date - selected_date)
+                if diff < closest_diff:
+                    closest_diff = diff
+                    closest_index = i
+            
+            # Now we have the closest image, let's fetch n images surrounding it
+            start_index = max(0, closest_index - n // 2)
+            end_index = min(len(image_dates), start_index + n)
+            
+            # Extract the image paths for the selected range
+            for i in range(start_index, end_index):
+                image_paths.append(image_dates[i][1])
 
-        self.image_paths = image_paths
-
+            self.image_paths = image_paths
+    
     # Enable scrolling up and down the report, and zooming - scroll while holding shift.
     def wheelEvent(self, event):
         """Enable zoom only for the central item when Shift is held, otherwise allow default scrolling."""

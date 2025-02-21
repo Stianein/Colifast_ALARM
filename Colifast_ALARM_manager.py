@@ -14,7 +14,8 @@ from PyQt5.QtGui import (
 )
 from PyQt5.QtCore import (
     Qt, QPoint, QCoreApplication, QSize, 
-    QThread, pyqtSignal, QDate, QTimer, QFile, QTextStream, QUrl
+    QThread, pyqtSignal, QDate, QTimer, QFile, QTextStream, QUrl,
+    QSharedMemory, QSystemSemaphore
 )
 from PyQt5.QtWidgets import (
     QLineEdit, QGroupBox, QGraphicsProxyWidget, QGraphicsLinearLayout, QSlider,
@@ -63,6 +64,8 @@ from python_designer_files.carousel import CarouselViewer
 import python_designer_files.clock_time_picker as time_pckr
 import python_designer_files.editor as editor
 
+# To lock multi instances of program posibility
+MEMORY_KEY = "Colifast_ALARM_Instance"
 
 # Get the directory of the current file
 current_file_directory = os.path.dirname(os.path.abspath(__file__))
@@ -102,9 +105,29 @@ if not settings.getMethod():
     settings.storeMethod(method_files_path)
 
 # MainWindow class
-class Colifast_ALARM(QMainWindow, Ui_MainWindow):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class Colifast_ALARM(QMainWindow):
+    _instance = None  # Class variable to track the single instance
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        # ALWAYS call the base class initializer first.
+        super().__init__()
+
+        # Then check if you’ve already done your custom initialization.
+        if hasattr(self, '_initialized'):
+            return
+
+        # Set up the UI using composition.
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+
+        # Mark as initialized so that subsequent calls do not reinitialize.
+        self._initialized = True
+
 
         settings.storePassword("", "")
         # Frameless window
@@ -113,20 +136,20 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # size
 
         # Assignments
-        self.setupUi(self)
+        # self.setupUi(self)
         # Hidden menues at start up
-        self.leftSubContainer.hide()
-        self.leftContainer.hide()
-        # self.moreOptions.hide()
-        # self.methodOptions.hide()
-        # self.bottleSize.hide()
-        # self.historyOptions.hide()
-        # self.advancedMenu.hide()
-        # self.hideCheckBox.hide()
+        self.ui.leftSubContainer.hide()
+        self.ui.leftContainer.hide()
+        # self.ui.moreOptions.hide()
+        # self.ui.methodOptions.hide()
+        # self.ui.bottleSize.hide()
+        # self.ui.historyOptions.hide()
+        # self.ui.advancedMenu.hide()
+        # self.ui.hideCheckBox.hide()
 
         # Set color manually
-        self.headerContainer.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.headerContainer.customContextMenuRequested.connect(self.show_context_menu)
+        self.ui.headerContainer.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.headerContainer.customContextMenuRequested.connect(self.show_context_menu)
 
         # Run initial setting of values upon first time use
         settings.preset_values()
@@ -136,17 +159,17 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Bottle size #
         if not settings.getBottleSize() or settings.getBottleSize() == 0:
             # force show objects for choosing bottle size, if not set
-            self.alarmFrame.hide()
-            self.bottleSize.show()
-            self.leftSubContainer.show()
-            self.leftContainer.show()
-            self.moreOptions.show()
-            self.bottleSizeWarning.show()
+            self.ui.alarmFrame.hide()
+            self.ui.bottleSize.show()
+            self.ui.leftSubContainer.show()
+            self.ui.leftContainer.show()
+            self.ui.moreOptions.show()
+            self.ui.bottleSizeWarning.show()
             # progressBar
-            self.remainingSamples.setMaximum(0)
-            self.remainingSamples.setFormat("0/0")
+            self.ui.remainingSamples.setMaximum(0)
+            self.ui.remainingSamples.setFormat("0/0")
         else:
-            self.bottleSizeWarning.hide()
+            self.ui.bottleSizeWarning.hide()
         # Resett run stop signal upon start up in case program was closed before reset
         settings.setstopSignal(0)
         # Update the progress bar for medium consumption
@@ -165,7 +188,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Put the viewer into a layout and display it in the reports widget
         layout = QVBoxLayout()
         layout.addWidget(self.carousel)
-        container = self.reports
+        container = self.ui.reports
         container.setLayout(layout)
 
         # Status bar signal from worker thread long running bact sample
@@ -180,7 +203,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.sample_id = None
         # Starting Time text
         self.worker_thread.startTime.connect(self.startTime)
-        self.startingTime.setText("Start Time")
+        self.ui.startingTime.setText("Start Time")
         # ALARM fields text
         self.worker_thread.bactAlarm.connect(self.bactAlarm)
         self.worker_thread.turbAlarm.connect(self.turbAlarm)
@@ -189,46 +212,45 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
         ### BUTTONS, CHECKBOXES AND DROP-DOWNS ###
         # Lay a hidden button under the progressbar to enable resetting of bottle upon changing to a new flask
-        self.hiddenButton = QPushButton(self.remainingSamples)
-        self.hiddenButton.setObjectName("hiddenButton")
+        self.ui.hiddenButton = QPushButton(self.ui.remainingSamples)
+        self.ui.hiddenButton.setObjectName("hiddenButton")
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.hiddenButton.setSizePolicy(sizePolicy)
+        self.ui.hiddenButton.setSizePolicy(sizePolicy)
         # Set the geometry of the hidden button to match the progress bar
-        self.hiddenButton.setGeometry(self.remainingSamples.geometry())
+        self.ui.hiddenButton.setGeometry(self.ui.remainingSamples.geometry())
         # Tooltip
-        self.hiddenButton.setToolTip("Medium indicator - click to update bottle")
+        self.ui.hiddenButton.setToolTip("Medium indicator - click to update bottle")
         # Style the button to be hidden
-        self.hiddenButton.setStyleSheet("background-color: transparent; border: none; text-align: center;")
+        self.ui.hiddenButton.setStyleSheet("background-color: transparent; border: none; text-align: center;")
 
         ## Side menu ##
         # Show
-        self.menuBtn.clicked.connect(self.show_menu)
+        self.ui.menuBtn.clicked.connect(self.show_menu)
         # Hidden button for new flask update below progressbar
-        self.hiddenButton.clicked.connect(self.progBar_clicked)
+        self.ui.hiddenButton.clicked.connect(self.progBar_clicked)
         # Medium #
         # Bottle menu click
         # Connect menu actions to toggle_menu
-        self.bottleSizeBtn.clicked.connect(lambda: self.toggle_menu("bottle"))
-        self.methodBtn.clicked.connect(lambda: self.toggle_menu("method"))
-        self.historyBtn.clicked.connect(lambda: self.toggle_menu("history"))
-        self.reportBtn.clicked.connect(lambda: self.toggle_menu("report"))
+        self.ui.bottleSizeBtn.clicked.connect(lambda: self.toggle_menu("bottle"))
+        self.ui.methodBtn.clicked.connect(lambda: self.toggle_menu("method"))
+        self.ui.historyBtn.clicked.connect(lambda: self.toggle_menu("history"))
+        self.ui.reportBtn.clicked.connect(lambda: self.toggle_menu("report"))
 
 
         # self.bottleSizeBtn.clicked.connect(lambda: self.toggle_more_options_menu(0))
         # Change value for bottle size
-        self.bottleSize.valueChanged.connect(lambda: self.bottle_changer(False))
+        self.ui.bottleSize.valueChanged.connect(lambda: self.bottle_changer(False))
         # method options #
-        # self.methodBtn.clicked.connect(lambda: self.toggle_more_options_menu(1))
         # history options
-        # self.historyBtn.clicked.connect(lambda: self.toggle_more_options_menu(2))
         # Report options
-        # self.reportBtn.clicked.connect(lambda: self.toggle_more_options_menu(3))
+        self.ui.reportFile.clicked.connect(self.update_auto_report)
+        # Bottle options
         # other values for bottle size than are dividable by the 7 (days of the week)
-        self.otherValues.clicked.connect(self.update_bottle_size_manual_option)
+        self.ui.otherValues.clicked.connect(self.update_bottle_size_manual_option)
         # Styling buttons
-        self.dark_mode.clicked.connect(lambda: self.change_stylesheet("dark_mode"))
-        self.classic_style.clicked.connect(lambda: self.change_stylesheet("classic"))
-        self.colorfull.clicked.connect(lambda: self.change_stylesheet("color"))
+        self.ui.dark_mode.clicked.connect(lambda: self.change_stylesheet("dark_mode"))
+        self.ui.classic_style.clicked.connect(lambda: self.change_stylesheet("classic"))
+        self.ui.colorfull.clicked.connect(lambda: self.change_stylesheet("color"))
         # Initial loading of style, if not stored in settings load classic theme
         try:
             style = settings.getStyle()
@@ -241,33 +263,33 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # Sodium Thiosulfate - set status of check box
         sodium_thio = settings.getSodiumThio()
         if sodium_thio is not None:
-            self.sodiumThio.setChecked(sodium_thio)
+            self.ui.sodiumThio.setChecked(sodium_thio)
 
         # External Sample -  set status of check box
         external_sample = settings.getExtSamp()
         if external_sample is not None:
-            self.externalSample.setChecked(external_sample)
+            self.ui.externalSample.setChecked(external_sample)
 
         # Delay Start Time - set status of check box
         delay = settings.getDelayStart()
         if delay is not None:
-            self.delayStartTime.setChecked(delay)
+            self.ui.delayStartTime.setChecked(delay)
 
         # Plotting option for series - set status of check box
         plot_series = settings.getPlotSeries()
         if plot_series is not None:
-            self.fullSeries.setChecked(plot_series)
+            self.ui.fullSeries.setChecked(plot_series)
 
         # Remote control from phone - set status of check box
         remote = settings.getRemoteStart()
         if remote is not None:
-            self.remoteStart.setChecked(remote)
+            self.ui.remoteStart.setChecked(remote)
             self.update_remote_start()
 
         # Dual sampling from two sources - set status of check box
         dual = settings.getDualSamples()
         if dual is not None:
-            self.dualSamples.setChecked(dual)
+            self.ui.dualSamples.setChecked(dual)
 
         # Set the sample source settings value and label
         source = settings.getSampleSource()
@@ -276,20 +298,25 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                 next_source = "sample 2"
             else:
                 next_source = "sample 1"
-            self.sampleSource.show()
+            self.ui.sampleSource.show()
             string = f"next source: {next_source}"
-            self.sampleSource.setText(string)
+            self.ui.sampleSource.setText(string)
         else:
-            self.sampleSource.hide()
+            self.ui.sampleSource.hide()
 
         # bottle option step size checkbox
         stepchecked = settings.getBottleSizeStep()
         if stepchecked is not None:
-            self.otherValues.setChecked(stepchecked)
+            self.ui.otherValues.setChecked(stepchecked)
         self.update_bottle_size_manual_option()
 
-        self.checkBoxes = [self.hideAlternateSample, self.hideDelayStart, self.hideExtSamp, self.hideRemoteStart, self.hideSoduimThio, self.show_specific_baseline]
-        self.checkBoxes_options = [self.frame_23, self.frame_19, self.frame_11, self.frame_22, self.frame_10, self.frame_31]
+        # Autogenerate Report
+        automatic_report = settings.getAutoReport()
+        if automatic_report is not None:
+            self.ui.reportFile.setChecked(automatic_report)
+
+        self.checkBoxes = [self.ui.hideAlternateSample, self.ui.hideDelayStart, self.ui.hideExtSamp, self.ui.hideRemoteStart, self.ui.hideSoduimThio, self.ui.show_specific_baseline]
+        self.checkBoxes_options = [self.ui.frame_23, self.ui.frame_19, self.ui.frame_11, self.ui.frame_22, self.ui.frame_10, self.ui.frame_31]
         
         # list = settings.getCheckBoxStates()
         # settings.storeCheckBoxStates(list +[2])
@@ -305,52 +332,52 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
         ## Options & choices ##
         # sodium thiosulfat
-        self.sodiumThio.clicked.connect(self.update_sodium_thio_status) # Upon cliking the checkbox emit new signal
+        self.ui.sodiumThio.clicked.connect(self.update_sodium_thio_status) # Upon cliking the checkbox emit new signal
         # Delay Start Time
-        self.delayStartTime.clicked.connect(self.update_delay_start_time) # Upon cliking the checkbox emit new signal
+        self.ui.delayStartTime.clicked.connect(self.update_delay_start_time) # Upon cliking the checkbox emit new signal
         # External sample #
-        self.externalSample.clicked.connect(self.update_external_sample_status) # Upon cliking the checkbox emit new signal
+        self.ui.externalSample.clicked.connect(self.update_external_sample_status) # Upon cliking the checkbox emit new signal
         # Remote cellphone start
-        self.remoteStart.clicked.connect(self.update_remote_start) # Upon cliking the checkbox emit new signal
+        self.ui.remoteStart.clicked.connect(self.update_remote_start) # Upon cliking the checkbox emit new signal
         # Dual samples alternating
-        self.dualSamples.clicked.connect(self.update_dual_samples)
+        self.ui.dualSamples.clicked.connect(self.update_dual_samples)
         # GSM listner for mobile start toggle signal
         self.call_start = False
         self.mobileRemoteToggle.call_start.connect(self.call_start_toggler)
         # Deciding/accepting a bottle size
-        self.acceptBottleSize.clicked.connect(lambda: self.bottle_changer(True)) # function to get bottle size
+        self.ui.acceptBottleSize.clicked.connect(lambda: self.bottle_changer(True)) # function to get bottle size
 
         # Target bacterium to analyse
-        self.target_bact = self.bact_box.currentIndexChanged.connect(self.target_bact_changer)
+        self.target_bact = self.ui.bact_box.currentIndexChanged.connect(self.target_bact_changer)
         # Frequency of sampling
-        self.freq_box.currentIndexChanged.connect(self.sample_frequency_changer)
+        self.ui.freq_box.currentIndexChanged.connect(self.sample_frequency_changer)
         ## Set the initial values for the Combo Boxes ##
         # Target bacteria
-        self.bact_box.setCurrentText(settings.getTargetBacteria())
+        self.ui.bact_box.setCurrentText(settings.getTargetBacteria())
         # Frequency
         frequency = self.get_frequency()
-        self.freq_box.setCurrentIndex(frequency)
+        self.ui.freq_box.setCurrentIndex(frequency)
         #self.sample_frequency_changer()
 
         ## History & Report menu ##
         # update the chosen date
         from functools import partial
 
-        self.historyCalendar.selectionChanged.connect(partial(self.handleDateSelection, self.historyCalendar))
-        self.reportCalendar.selectionChanged.connect(partial(self.handleDateSelection, self.reportCalendar))
+        self.ui.historyCalendar.selectionChanged.connect(partial(self.handleDateSelection, self.ui.historyCalendar))
+        self.ui.reportCalendar.selectionChanged.connect(partial(self.handleDateSelection, self.ui.reportCalendar))
         # Deactivate dates by default
-        self.historyCalendar.setDateEditEnabled(False)  # Disable date editing for all dates
+        self.ui.historyCalendar.setDateEditEnabled(False)  # Disable date editing for all dates
         # Date variable
         self.selected_date = None
         # Update calendar with dates with data upon launche
-        self.handleDateSelection(calendar=self.historyCalendar)
+        self.handleDateSelection(calendar=self.ui.historyCalendar)
         # Plot the chosen date from calendar when clicked
-        self.plotBtn.clicked.connect(lambda: self.plot_historic_data(date=self.selected_date))
+        self.ui.plotBtn.clicked.connect(lambda: self.plot_historic_data(date=self.selected_date))
         # Create report for chosen date from calendar
-        self.createReport.clicked.connect(lambda: self.data_collection_for_report(date=self.selected_date))
+        self.ui.createReport.clicked.connect(lambda: self.data_collection_for_report(date=self.selected_date))
         # Slider for choosing multiple dates changed
-        self.horizontalSlider.valueChanged.connect(self.n_samples)
-        self.fullSeries.stateChanged.connect(self.update_slider_state)
+        self.ui.horizontalSlider.valueChanged.connect(self.n_samples)
+        self.ui.fullSeries.stateChanged.connect(self.update_slider_state)
 
         ## SCHEDUALING ##
         # Slider for schedualing sample runs
@@ -364,32 +391,32 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         # populate the method file drop-down #
         self.methodDropDown()
         # Update the selected method file #
-        method_file = self.methodSelector.currentIndexChanged.connect(self.method_file_changer)
+        method_file = self.ui.methodSelector.currentIndexChanged.connect(self.method_file_changer)
 
         # Advanced settings #
-        self.advancedMenu.hide()
-        self.advSettingsBtn.clicked.connect(self.adv_settings)
+        self.ui.advancedMenu.hide()
+        self.ui.advSettingsBtn.clicked.connect(self.adv_settings)
         # self.advanced_settings = None
 
         # Show the right page for the right menu chosen in advanced menu
-        self.backBtn.clicked.connect(lambda: self.advmenu_button_click(0))
-        self.manualBtn.clicked.connect(lambda: self.advmenu_button_click(1))
-        self.aduBtn.clicked.connect(lambda: self.advmenu_button_click(1))#lambda: self.stackedWidget.setCurrentIndex(1))
-        self.sfmBtn.clicked.connect(lambda: self.advmenu_button_click(2))
-        self.liquidBtn.clicked.connect(lambda: self.advmenu_button_click(3))
-        self.txteditorBtn.clicked.connect(lambda: self.advmenu_button_click(4))
+        self.ui.backBtn.clicked.connect(lambda: self.advmenu_button_click(0))
+        self.ui.manualBtn.clicked.connect(lambda: self.advmenu_button_click(1))
+        self.ui.aduBtn.clicked.connect(lambda: self.advmenu_button_click(1))#lambda: self.ui.stackedWidget.setCurrentIndex(1))
+        self.ui.sfmBtn.clicked.connect(lambda: self.advmenu_button_click(2))
+        self.ui.liquidBtn.clicked.connect(lambda: self.advmenu_button_click(3))
+        self.ui.txteditorBtn.clicked.connect(lambda: self.advmenu_button_click(4))
         
 
         ## Start/stop Buttons ##
-        self.startNewMethod.clicked.connect(self.toggle_worker)
+        self.ui.startNewMethod.clicked.connect(self.toggle_worker)
         self.worker_thread.error_msg.connect(self.show_error_message)
         self.worker_thread.finished_signal.connect(self.finished_run)
         # Variable for stopping program after current samples end
         self.stop_after_current_sample = False 
         # Context menu for right-clicking start/stop button to allow for multiple options: abort run, or stop after sample has finnished
-        self.startNewMethod.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.startNewMethod.setContextMenuPolicy(Qt.CustomContextMenu)
         # Right-click for options; abort_or_stop_after_current method
-        self.startNewMethod.customContextMenuRequested.connect(self.abort_or_stop_after_current)
+        self.ui.startNewMethod.customContextMenuRequested.connect(self.abort_or_stop_after_current)
 
         # Initialize variables for tracking the window position ### GUI Design ## Window control # Moving
         self.dragging = False
@@ -400,9 +427,9 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.offset = QPoint(0, 0)
 
         # Window control buttons #
-        self.closebtn.clicked.connect(self.close_all_windows)
-        self.restorebtn.clicked.connect(self.toggle_maximized)
-        self.minimizebtn.clicked.connect(self.minimize_window)
+        self.ui.closebtn.clicked.connect(self.close_all_windows)
+        self.ui.restorebtn.clicked.connect(self.toggle_maximized)
+        self.ui.minimizebtn.clicked.connect(self.minimize_window)
 
 
         # Load manual html file and attach it to the manual page
@@ -410,7 +437,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
             html_content = file.read()
 
         # Load the HTML into the QTextBrowser from the designer file
-        self.manualBrowserText.setHtml(html_content)
+        self.ui.manualBrowserText.setHtml(html_content)
         # set the size of the window  on opening
         self.resize(800, 600)
         self.setMaximumSize(800, 600)
@@ -419,25 +446,25 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
     ## Start/Stop current run ##
     def start_updater(self):
         # Update icon and tooltip
-        self.icon_changer_for_color_maintenance([self.startNewMethod], ["square.svg"])
-        self.startNewMethod.setToolTip("Stop Run")
+        self.icon_changer_for_color_maintenance([self.ui.startNewMethod], ["square.svg"])
+        self.ui.startNewMethod.setToolTip("Stop Run")
         # Clear previous status browsing
         self.status_queue.clear()
 
     def stop_updater(self):
         # Update icon and tooltip
-        self.icon_changer_for_color_maintenance([self.startNewMethod], ["play.svg"])
-        self.startNewMethod.setToolTip("Start Run")
+        self.icon_changer_for_color_maintenance([self.ui.startNewMethod], ["play.svg"])
+        self.ui.startNewMethod.setToolTip("Start Run")
 
     def toggle_worker(self):
         # TURN ON - START METHOD
         # There is not a sample run scheduled
-        if not self.startNewMethod.isChecked():
+        if not self.ui.startNewMethod.isChecked():
             # Abort/return if there are no more medium left and the user has not inserted a new bottle
             if not self.check_medium_status():
                 return
             # Prompt the user for delay before start if that option is checked
-            if self.delayStartTime.checkState():
+            if self.ui.delayStartTime.checkState():
                 dialog = TimeSelectorDialog(self)
                 start_time = dialog.get_chosen_time()
                 if start_time:
@@ -445,7 +472,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                 # Abort if the user exits the delay window
                 else:
                     # ReCheck the button as the click UnChecked it, but the user aborted
-                    self.startNewMethod.setChecked(True)
+                    self.ui.startNewMethod.setChecked(True)
                     # self.call_start = True
                     return
 
@@ -453,12 +480,12 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
             settings.setstopSignal(0)
 
             # Change icon as run has started
-            self.startNewMethod.setChecked(False)
+            self.ui.startNewMethod.setChecked(False)
             # self.call_start = False # Can't call to start when a run is already started
             self.start_updater()
 
             # Start run with delay
-            if self.delayStartTime.checkState():
+            if self.ui.delayStartTime.checkState():
                 self.sample_scheduler(start_time=start_time)
                 string = f"Delay first sample, {self.datetimestringler(start_delay)}"
                 self.setStatus(string)
@@ -481,6 +508,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                 self.setStatus("Stopped")
                 self.stop_updater()
                 self.setStatus("Aborting all scheduled runs...")
+                # settings.storeSamplesNr(settings.getBottleSize)
 
                 if not settings.getFrequency() == 0:
                     try:
@@ -495,20 +523,20 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
             else:
                 # UnCheck the button as the click checked it, but the user reconsidered by X ing out the stop window
-                self.startNewMethod.setChecked(False)
+                self.ui.startNewMethod.setChecked(False)
                 
                 return
 
     # Function to activate a stop after current sample
     def delete_future_samples_and_stop_after_current(self):
         # If there is a current run
-        if not self.startNewMethod.isChecked():
+        if not self.ui.startNewMethod.isChecked():
             # Update status browser
             self.setStatus("The run is stopping after current sample")
-            current_text = self.startingTime.toPlainText()
-            self.startTime(f"{current_text}\n\nThe run is stopping after current sample")
+            current_text = self.ui.startingTime.toPlainText()
+            self.ui.startTime(f"{current_text}\n\nThe run is stopping after current sample")
 
-            if self.startNewMethod.isChecked():
+            if self.ui.startNewMethod.isChecked():
                 self.stop_updater()
             # Set the stop after current variable to true
             self.stop_after_current_sample = True
@@ -532,7 +560,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
     # Function to allow the user to stop the run after the current run has ended
     def abort_or_stop_after_current(self, position):
         # If the method is not running you can't stop it - return
-        if not self.startNewMethod.isChecked():
+        if not self.ui.startNewMethod.isChecked():
             # Make a menu when right-click
             context_menu = QMenu(self)
             context_menu.setObjectName("customContextMenu")
@@ -541,14 +569,14 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
             context_menu.addAction(how_to_stop_action)
             
             # Temporarily disable the button to prevent triggering
-            self.startNewMethod.setEnabled(False)
+            self.ui.startNewMethod.setEnabled(False)
             
             # Get the global position for the context menu
-            global_position = self.startNewMethod.mapToGlobal(position)
+            global_position = self.ui.startNewMethod.mapToGlobal(position)
             context_menu.exec_(global_position)
             
             # Re-enable the button after the menu closes
-            self.startNewMethod.setEnabled(True)
+            self.ui.startNewMethod.setEnabled(True)
 
 
 
@@ -620,6 +648,9 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
             end_time = datetime.datetime.now()
             sample_time = end_time - start_time
 
+            if settings.getAutoReport():
+                self.data_collection_for_report(start_time.strftime("%Y-%m-%d"))
+
             # Update to database with total sample time
             db.execute_query("UPDATE SampleInfo SET full_sample_time = ? WHERE id = ?", str(sample_time), self.sample_id)
 
@@ -628,13 +659,14 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
             self.update_medium_progress_bar()
 
             # Update the alternating sample source if that option is checked
-            if self.dualSamples.checkState():
+            if self.ui.dualSamples.checkState():
                 self.update_dual_samples()
 
             self.log.info(f"sample_nmb: {sample_number} settings: {settings.getSamplesNr()} Settings remain: {settings.getRemaining()}")
             
             # THE LAST SAMPLE HAS FINISHED #
-            if sample_number >= settings.getSamplesNr() or settings.getRemaining() <= 0:
+            # if sample_number >= settings.getSamplesNr() or settings.getRemaining() <= 0: # Suggested alternative for if one is to split up into two variables the amount of samples to run and the size of samples in the medium bottle. this need som fixing, as for some reason the first part of the statement rings true when it is not supposed to.
+            if settings.getRemaining() <= 0:
                 print("sample_nmb: ", sample_number, "settings: ", settings.getSamplesNr(), "Settings remain: ", settings.getRemaining())
                 # Try to stop mobile remote listner (if it is running) - should not be possible to remote start when there is no medium left.
                 try:
@@ -642,7 +674,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                 except:
                     pass
                 # Update start/stop button
-                self.startNewMethod.setChecked(True)
+                self.ui.startNewMethod.setChecked(True)
                 self.stop_updater()
                 # if not settings.getFrequency() == 0:
                 if not settings.getFrequency() == 0:
@@ -664,15 +696,15 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                     if settings.getRemaining() > 0 and settings.getRemoteStart():
                         time.sleep(1)
                         self.setStatus("Awaiting remote start...")
-                        current_text = self.startingTime.toPlainText()
-                        self.startTime(f"{current_text}\n\nAwaiting remote start...")
+                        current_text = self.ui.startingTime.toPlainText()
+                        self.ui.startTime(f"{current_text}\n\nAwaiting remote start...")
                     self.stop_updater()
-                    self.startNewMethod.setChecked(True)
+                    self.ui.startNewMethod.setChecked(True)
                     return
                 # If the run is continuous the next sample is just started imediately.
                 if settings.getFrequency() == 0:
                     # A control check if the user has stopped the program without it being handled by the software
-                    if self.startNewMethod.isChecked():
+                    if self.ui.startNewMethod.isChecked():
                         self.setStatus("The user has stopped the run")
                         return
                     else:
@@ -689,8 +721,8 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                         if not self.call_start:
                             self.future_samples = []
                             self.setStatus("Awaiting remote start...")
-                            current_text = self.startingTime.toPlainText()
-                            self.startTime(f"{current_text}\n\nAwaiting remote start...")
+                            current_text = self.ui.startingTime.toPlainText()
+                            self.ui.startTime(f"{current_text}\n\nAwaiting remote start...")
                             return
                         else:
                             pass
@@ -725,22 +757,19 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
         self.update_medium_progress_bar()
         db = DatabaseHandler()
         # Update the start/stop button
-        self.startNewMethod.setChecked(False)
+        self.ui.startNewMethod.setChecked(False)
         self.start_updater()
 
         ## COLLECT AND STORE DATA ##
-        # Sample
-        try:
-            # Increase the previous sample number by one for this sample
-            sample_number = db.fetch_data("SELECT sample_number FROM SampleInfo WHERE id = ?", self.sample_id)[0][0] + 1
-            print(sample_number, "DB")
-            #sample_number = settings.getSamplesNr() -
-        except:
-            if settings.getRemaining() != 0 and settings.getRemaining() != settings.getSamplesNr():
-                sample_number = db.fetch_data("SELECT MAX(sample_number) FROM SampleInfo WHERE id IN(SELECT MAX(id) FROM SampleInfo)")[0][0] + 1
-            else:
-                sample_number = 1
-                print(sample_number, "set to 1")
+        # Update sample number
+        result = db.fetch_data("SELECT MAX(sample_number) FROM SampleInfo WHERE id IN(SELECT MAX(id) FROM SampleInfo)")
+        sample_number = result[0][0] if result and result[0][0] is not None else 0  # Default to 0 if no valid value
+        # DB not initialized set id to 1
+        if not sample_number:                
+            sample_number = 1
+            print("sample_number set to 1, for first time initialization of DataBase")
+
+
         # Timing
         start = datetime.datetime.now()
         timing = self.datetimestringler(start)
@@ -783,11 +812,11 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
 
             # Display the formatted time
             formatted_time = f"    {hours:02}:{minutes:02}:{seconds:02}"
-            self.timeCounter.setStyleSheet("text-align: center;")
-            self.timeCounter.setPlainText(formatted_time)
+            self.ui.timeCounter.setStyleSheet("text-align: center;")
+            self.ui.timeCounter.setPlainText(formatted_time)
         else:
             # Stop the timer when the worker finishes
-            self.timeCounter.setPlainText("")
+            self.ui.timeCounter.setPlainText("")
             self.method_timer.stop()
 
 
@@ -875,7 +904,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
                 dialog = ErrorDialog("The spectrophotometer is not connected")
                 accepted = dialog.exec_()
                 if accepted == QDialog.Accepted:
-                    self.startNewMethod.setChecked(True)
+                    self.ui.startNewMethod.setChecked(True)
                     return False
                 else:
                     sfm_serial_number = "Not connected"
@@ -898,7 +927,7 @@ class Colifast_ALARM(QMainWindow, Ui_MainWindow):
             )
 
             serial_number = db.fetch_data("SELECT instrument_serial_number FROM InstrumentInfo")[0][0]
-            if self.delayStartTime.checkState():
+            if self.ui.delayStartTime.checkState():
                 delay_info = start_time
             else:
                 delay_info = "No delay"
@@ -927,9 +956,9 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     def call_start_toggler(self):
         # Toggle the value of call_start and start run if it is not allready running,
         # If it is running remove futer runs and set stop_after_current_sample parameter to true 
-        if not self.call_start and self.startNewMethod.isChecked():
+        if not self.call_start and self.ui.startNewMethod.isChecked():
             self.setStatus("System has been remotely activated")
-            self.startNewMethod.setChecked(False)
+            self.ui.startNewMethod.setChecked(False)
             self.call_start = True
             # Reset stopsignal
             settings.setstopSignal(0)
@@ -963,7 +992,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 self.resizing = False
                 self.dragging = True
                 # Close menu if clicked outside of it
-                side_menu = self.leftContainer.geometry()
+                side_menu = self.ui.leftContainer.geometry()
                 if not side_menu.contains(event.pos()):
                     self.hideMenuIfClickedOutside(event.globalPos())
             self.offset = event.pos()
@@ -984,7 +1013,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             self.offset = event.pos()
         # Moving the window
         elif self.dragging:
-            self.restorebtn.setToolTip("Maximize Window")
+            self.ui.restorebtn.setToolTip("Maximize Window")
             self.max = False
             self.move(self.mapToParent(event.pos() - self.offset))
         # Change cursor settings based on where the mouse is
@@ -1021,45 +1050,45 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             self.vertical = False
             self.offset = None
             self.setCursor(Qt.ArrowCursor)
-            self.icon_changer_for_color_maintenance([self.restorebtn], ["square.svg"])
+            self.icon_changer_for_color_maintenance([self.ui.restorebtn], ["square.svg"])
 
     # Function to hide the menues if mouse click occurs outside of them
     def hideMenuIfClickedOutside(self, global_pos):
         # Check if the menu is open
-        if not self.leftSubContainer.isHidden():
+        if not self.ui.leftSubContainer.isHidden():
             # Get the geometry of the menu and more options widgets
-            left_menu_rect = self.leftSubContainer.geometry()
-            more_options_rect = self.moreOptions.geometry()
+            left_menu_rect = self.ui.leftSubContainer.geometry()
+            more_options_rect = self.ui.moreOptions.geometry()
             united_rect = left_menu_rect.united(more_options_rect)
 
-            for w in self.leftSubContainer.findChildren(QWidget):
+            for w in self.ui.leftSubContainer.findChildren(QWidget):
             #    print(w)
                united_left = left_menu_rect.united(w.geometry())
 
             # Check if the click is outside of the menu and inside the more options area
-            if self.moreOptions.isHidden():
+            if self.ui.moreOptions.isHidden():
                 if left_menu_rect.contains(global_pos):
                     pass
                 else:
-                    self.menuBtn.click()
+                    self.ui.menuBtn.click()
             else:
                 # print(global_pos)
                 if united_rect.contains(global_pos.x(), global_pos.y()):
                     pass
                 else:
-                    self.menuBtn.click()
+                    self.ui.menuBtn.click()
             # Temporary solution to solve the program expanding out of the monitor - this will create a little strange behaviour when not ran on an industrial computer.
 
     # Toggle maximize/normal window size #
     def toggle_maximized(self):
         if self.max:
             self.showNormal()
-            self.icon_changer_for_color_maintenance([self.restorebtn], ["square.svg"])
-            self.restorebtn.setToolTip("Maximize Window")
+            self.icon_changer_for_color_maintenance([self.ui.restorebtn], ["square.svg"])
+            self.ui.restorebtn.setToolTip("Maximize Window")
         else:
             self.showMaximized()
-            self.icon_changer_for_color_maintenance([self.restorebtn], ["copy.svg"])
-            self.restorebtn.setToolTip("Restore Window Size")
+            self.icon_changer_for_color_maintenance([self.ui.restorebtn], ["copy.svg"])
+            self.ui.restorebtn.setToolTip("Restore Window Size")
             # Ensure the window fills the entire screen when restored
             available_geometry = QApplication.desktop().availableGeometry(self)
             self.setGeometry(available_geometry)
@@ -1098,8 +1127,8 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         # Temporarily disable layout updates
         self.setUpdatesEnabled(False)
 
-        self.stackedWidget.setCurrentIndex(0)
-        self.stackedWidget_1.setCurrentIndex(0)
+        self.ui.stackedWidget.setCurrentIndex(0)
+        self.ui.stackedWidget_1.setCurrentIndex(0)
         stylesheet_color = "background-color: " + self.btn_press + ";"
         button = self.sender()
         if menu == "bottle":
@@ -1110,20 +1139,20 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             index = 2
         elif menu == "report":
             index = 3
-            self.stackedWidget_1.setCurrentIndex(1)
+            self.ui.stackedWidget_1.setCurrentIndex(1)
 
         """Toggle between different option menus contained in the QStackedWidget."""
-        if self.moreOptions.isHidden():
-            self.alarmFrame.hide()
-            self.moreOptions.show()
-            self.moreOptions.setCurrentIndex(index)
+        if self.ui.moreOptions.isHidden():
+            self.ui.alarmFrame.hide()
+            self.ui.moreOptions.show()
+            self.ui.moreOptions.setCurrentIndex(index)
         else:
-            current_index = self.moreOptions.currentIndex()
+            current_index = self.ui.moreOptions.currentIndex()
             if current_index == index:
-                self.moreOptions.hide()
-                self.alarmFrame.show()
+                self.ui.moreOptions.hide()
+                self.ui.alarmFrame.show()
             else:
-                self.moreOptions.setCurrentIndex(index)
+                self.ui.moreOptions.setCurrentIndex(index)
 
         # Reset buttons previously clicked, then set style for the newly clicked
         self.reset_button_styles()
@@ -1141,19 +1170,19 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
     # Switch between pages of the advanced menus
     def advmenu_button_click(self, index):
-        self.moreOptions.hide()
+        self.ui.moreOptions.hide()
         stylesheet_color = "background-color: " + self.btn_press + ";"
-        # self.toggle_menu()
+        # self.ui.toggle_menu()
         pressed_button = self.sender()
-        if pressed_button == self.backBtn:
-            self.stackedWidget.setCurrentIndex(0)
-            self.stackedWidget_1.setCurrentIndex(0)
-        elif pressed_button == self.manualBtn:
-            self.stackedWidget.setCurrentIndex(0)
-            self.stackedWidget_1.setCurrentIndex(2)
+        if pressed_button == self.ui.backBtn:
+            self.ui.stackedWidget.setCurrentIndex(0)
+            self.ui.stackedWidget_1.setCurrentIndex(0)
+        elif pressed_button == self.ui.manualBtn:
+            self.ui.stackedWidget.setCurrentIndex(0)
+            self.ui.stackedWidget_1.setCurrentIndex(2)
         else:
-            self.stackedWidget.setCurrentIndex(1)
-            self.stackedWidget.setCurrentIndex(index)
+            self.ui.stackedWidget.setCurrentIndex(1)
+            self.ui.stackedWidget.setCurrentIndex(index)
             # Update adu button status
             self.aduWindow.update_adu_relay_buttons()
 
@@ -1164,7 +1193,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     def reset_button_styles(self):
         """Reset the style of all buttons to clear any previous selection."""
         for button in self.findChildren(QPushButton):
-            if button.parentWidget() == self.menuButtons or button.parentWidget() == self.advancedMenu:
+            if button.parentWidget() == self.ui.menuButtons or button.parentWidget() == self.ui.advancedMenu:
                 button.setStyleSheet("")
 
     # Function to expand the main sidebar menu - adds advanced feature of the menu if aduadv is instantiated
@@ -1176,29 +1205,29 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         self.setUpdatesEnabled(False)
         
         # print("before: ", size)
-        if self.leftSubContainer.isHidden():
+        if self.ui.leftSubContainer.isHidden():
             # # Show the menu
-            # for w in self.leftSubContainer.findChildren(QWidget):
+            # for w in self.ui.leftSubContainer.findChildren(QWidget):
             #     print(w)
             #     w.show()
-            self.leftContainer.show()
-            self.leftSubContainer.show()
-            self.moreOptions.hide()
+            self.ui.leftContainer.show()
+            self.ui.leftSubContainer.show()
+            self.ui.moreOptions.hide()
             if ADUadv.instantiated:
-                self.advancedMenu.show()
-                self.hideCheckBox.show()
+                self.ui.advancedMenu.show()
+                self.ui.hideCheckBox.show()
                 for box in self.checkBoxes_options:
                     box.show()
             else:
-                self.advancedMenu.hide()
-                self.hideCheckBox.hide()
+                self.ui.advancedMenu.hide()
+                self.ui.hideCheckBox.hide()
                 self.checkbox_hiding()
 
         else:
             # Hide all menus before opening a chosen menu
-            self.leftSubContainer.hide()
-            self.leftContainer.hide()
-            self.alarmFrame.show()
+            self.ui.leftSubContainer.hide()
+            self.ui.leftContainer.hide()
+            self.ui.alarmFrame.show()
 
         # Re-enable layout updates after processing
         self.setUpdatesEnabled(True)
@@ -1241,14 +1270,14 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
 
         # Change the chosen styling color (text color) for all the icons in the GUI
-        icons = [self.menuBtn, self.advSettingsBtn, self.minimizebtn, self.restorebtn, self.closebtn, self.startNewMethod, self.backBtn]
+        icons = [self.ui.menuBtn, self.ui.advSettingsBtn, self.ui.minimizebtn, self.ui.restorebtn, self.ui.closebtn, self.ui.startNewMethod, self.ui.backBtn]
         icon_paths = ["align-justify.svg", "settings.svg", "minus.svg", "square.svg", "x.svg", "play.svg", "arrow-left.svg", ]
         self.icon_changer_for_color_maintenance(icons, icon_paths)
 
         # Sett the chosen styling propertis for the stacked, and tab widgets too
-        self.stackedWidget.setStyleSheet("background-color: " + self.background + ";")
-        self.stackedWidget_1.setStyleSheet("background-color: " + self.background + ";")
-        self.tabWidget.setStyleSheet("""
+        self.ui.stackedWidget.setStyleSheet("background-color: " + self.background + ";")
+        self.ui.stackedWidget_1.setStyleSheet("background-color: " + self.background + ";")
+        self.ui.tabWidget.setStyleSheet("""
             QTabWidget{{
                 background-color: {}; /* Set the background color */
                 color: {};
@@ -1318,7 +1347,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         change_color_action = QAction("Change Color", self)
         change_color_action.triggered.connect(self.show_color_picker)
         context_menu.addAction(change_color_action)
-        context_menu.exec_(self.mapToGlobal(position))
+        context_menu.exec_(self.ui.mapToGlobal(position))
 
     # Show the color sliders for the colorfull style
     def show_color_picker(self):
@@ -1376,45 +1405,45 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     # CheckBox that activates full series - it will thus plot all samples from a run in any given run, based on the data in th database
     # And thus deactivates n-samples - the value for manually selecting how many samples to plot
     def update_slider_state(self, state):
-        self.horizontalSlider.setEnabled(not state)
+        self.ui.horizontalSlider.setEnabled(not state)
         settings.storePlotSeries(state)
         self.updateCalendar()
 
     # Update when slider is changed
     # historic plot slider - choose how many samples to plot in the same plot
     def n_samples(self):
-        string = f"samples to plot = {self.horizontalSlider.value()}"
+        string = f"samples to plot = {self.ui.horizontalSlider.value()}"
         self.nSamples.setText(string)
         self.updateCalendar()
 
     # # Schedual slider - a feature that can be rewoked if the ability to start a run of less samples than the bottle size
     # # - so as to isolate the value of bottle size and the amount of samples ran. Maybe this will never be necessary. 
     # def sched_samples(self):
-    #     self.dayScheduler.setMaximum(settings.getBottleSize())
-    #     value = self.dayScheduler.value()
+    #     self.ui.dayScheduler.setMaximum(settings.getBottleSize())
+    #     value = self.ui.dayScheduler.value()
     #     string = f"n={value}"
-    #     self.schedSamples.setText(string)
+    #     self.ui.schedSamples.setText(string)
     #     settings.storeSamplesNr(value)
     #     self.update_medium_progress_bar()
 
     # Update the calendar to visually indicate selected dates - with regards to n-samples or full-series(selected run) option
     def updateCalendar(self):
         self.resetCalendarColors()
-        self.historic_data_availability_to_calender(self.historyCalendar)
-        self.historic_data_availability_to_calender(self.reportCalendar)
+        self.historic_data_availability_to_calender(self.ui.historyCalendar)
+        self.historic_data_availability_to_calender(self.ui.reportCalendar)
 
         multiple_days_format = QTextCharFormat()
         # Get highlight color of calendar
-        palette = self.historyCalendar.palette()
+        palette = self.ui.historyCalendar.palette()
         highlight_color = palette.color(QPalette.Active, QPalette.Highlight)
         multiple_days_format.setBackground(highlight_color)
         # Convert the selected date from string to QDate
         selected_qdate = QDate.fromString(self.selected_date, 'yyyy-MM-dd')
         # Add dates if multiple dates selector is active
-        n_days = self.horizontalSlider.value() - 1                                #### THis mmight max out on 20 not 21
+        n_days = self.ui.horizontalSlider.value() - 1                                #### THis mmight max out on 20 not 21
 
         # Select the dates that are included in the sample series that the selected date is part of
-        if self.fullSeries.isChecked():
+        if self.ui.fullSeries.isChecked():
             # Get amount of samples of selected run series
             try:
                 db = DatabaseHandler()
@@ -1431,7 +1460,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
        # Iterate through the date range and set each date as selected                       ### Might want to have this only mark dates that has data, so as to work well with every other day runs...
         current_date = start_date
         while current_date <= selected_qdate:
-            self.historyCalendar.setDateTextFormat(current_date, multiple_days_format)
+            self.ui.historyCalendar.setDateTextFormat(current_date, multiple_days_format)
             current_date = current_date.addDays(1)
 
     # Reset the colors of the calendar for +/- 1 month of selected month
@@ -1440,24 +1469,24 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         format = QTextCharFormat()
         format.setBackground(QBrush(QColor(Qt.gray).lighter(150)))  # Get the default gray color
 
-        currentDate = self.historyCalendar.selectedDate()
+        currentDate = self.ui.historyCalendar.selectedDate()
         for month in range(-1, 2):
             sel_date = currentDate.addMonths(month)
             for day in range(1, 32):
                 date = QDate(sel_date.year(), sel_date.month(), day)
-                self.historyCalendar.setDateTextFormat(date, format)
+                self.ui.historyCalendar.setDateTextFormat(date, format)
 
 
     # collect the DB-entries that have the data from the specified date
     def plot_historic_data(self, id="", date=""):
         db = DatabaseHandler()
-        n_samples = self.horizontalSlider.value()
+        n_samples = self.ui.horizontalSlider.value()
         if date == "":
             print("id from plot_hist function: ", id)
             sample_id = id
         else:
             # Check all dates of the selection before giving an error of no data
-            if not self.fullSeries.isChecked() and self.horizontalSlider.value() > 1:
+            if not self.ui.fullSeries.isChecked() and self.ui.horizontalSlider.value() > 1:
                 try:
                     # Start loop at earliest date
                     date = self.date_looper(date, (1 - n_samples))
@@ -1468,20 +1497,20 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                         date = self.date_looper(date, 1)
                         sample_id  = self.get_sample_id_from_date(date)
                         # If there are no dates in the selection that has data, raise error
-                        if days >= self.horizontalSlider.value():
+                        if days >= self.ui.horizontalSlider.value():
                             raise RuntimeError
                         # Update counters each itteration
                         days += 1
                         n_samples = n_samples + 1
                 except:
-                    self.show_error_message("There seem to be no data from those dates")
+                    self.show_error_message("There seem to be no data from those dates", False)
                     return
             else:
                 sample_id  = self.get_sample_id_from_date(date)
                 if not sample_id:
                     return
             # Catch dates with multiple data instances, and prompt the user to select instance.
-            if len(sample_id) > 1 and self.horizontalSlider.value() > 1:
+            if len(sample_id) > 1 and self.ui.horizontalSlider.value() > 1:
                 items = [str(sid) for sid in sample_id]
                 item, ok_pressed = QInputDialog.getItem(self, "Multiple Samples", "Select the sample you want to plot:", items, 0, False)
                 if ok_pressed and item:
@@ -1511,7 +1540,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                     else:
                         tab_name = str(wavelength[0]) + " " + date
                     # Check if the full Series checkbox is checked
-                    if self.fullSeries.isChecked():
+                    if self.ui.fullSeries.isChecked():
                         print("full Series")
                         self.signal_to_plot(sample_id, wavelength[0], tab_name)
                     else:
@@ -1521,7 +1550,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             self.show_error_message(string)
         except IndexError:
             string = f"There seem to be no readings for the sample from {date}"
-            self.show_error_message(string)
+            self.show_error_message(string, False)
 
     # Function to loop over days in a string format(YYYY-MM-DD)
     def date_looper(self, date, days):
@@ -1540,111 +1569,113 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         except:
             # If more than one date is to be plotted, avoid the error message of
             # no data, as it will itterate to the next date with posible data.
-            if not self.fullSeries.isChecked() and self.horizontalSlider.value() > 1:
+            if not self.ui.fullSeries.isChecked() and self.ui.horizontalSlider.value() > 1:
                 return False
-            self.show_error_message("No data from that date")
+            self.show_error_message("No data from that date", False)
             return False
 
 
     # Collect data from database to generate the report
-    def data_collection_for_report(self, date):
+    def data_collection_for_report(self, date):      
+        global path 
         from pdf2image import convert_from_path
-        try:
-            fluo_wl = str(settings.getWavelengthFluo())
-            turb_wl = str(settings.getWavelengthTurb())
-            print("DATE: ", date, type(date))
+        # try:
+        fluo_wl = str(settings.getWavelengthFluo())
+        turb_wl = str(settings.getWavelengthTurb())
+        print("DATE: ", date, type(date))
 
-            db = DatabaseHandler()
-            serial_number = db.fetch_data("SELECT instrument_serial_number FROM InstrumentInfo")[0][0]
-            RunInfo = db.fetch_data("SELECT * FROM RunInfo WHERE id IN(SELECT run_id FROM SampleInfo WHERE date = ?)", date)[0]
-            SampleInfo = db.fetch_data("SELECT * FROM SampleInfo WHERE date = ?", date)[0]
-            SpectralData = db.fetch_data("SELECT * FROM SpectralData WHERE sample_id IN(SELECT id FROM SampleInfo WHERE date = ?)", date)
+        db = DatabaseHandler()
+        serial_number = db.fetch_data("SELECT instrument_serial_number FROM InstrumentInfo")[0][0]
+        RunInfo = db.fetch_data("SELECT * FROM RunInfo WHERE id IN(SELECT run_id FROM SampleInfo WHERE date = ?)", date)[0]
+        SampleInfo = db.fetch_data("SELECT * FROM SampleInfo WHERE date = ?", date)[0]
+        SpectralData = db.fetch_data("SELECT * FROM SpectralData WHERE sample_id IN(SELECT id FROM SampleInfo WHERE date = ?)", date)
+        print(SampleInfo)
+        # Create report and page
+        pdf = PDFReport(SampleInfo[3])
+        pdf.add_page()
+        ## FETCH INFO FROM DB AND PRINT TO PDF ##
+        # Technical info section
+        string = f"{24*int(RunInfo[-2])} h"
+        tech_info = ["1", serial_number, RunInfo[-1], os.path.basename(RunInfo[-3]), "Yes" if SampleInfo[-4] != 0 else "No", "Yes" if SampleInfo[-3] != 0 else "No",\
+        "Continuous" if 0 else string, RunInfo[-4].split(" - ")[0], RunInfo[-4].split(" - ")[1]]
+        info = ["Software Version", "Instrument Serial Number", "Spectrometer Serial Number", "Method File", "External Sample", "Sodium Thiosulfate", \
+        "Sample Frequency", "Target Bacteria", "Incubation Temperature"]
+        pdf.report_section("Technical Info", 60, info, tech_info)
 
-            # Create report and page
-            pdf = PDFReport(SampleInfo[3])
-            pdf.add_page()
-            ## FETCH INFO FROM DB AND PRINT TO PDF ##
-            # Technical info section
-            string = f"{24*int(RunInfo[-2])} h"
-            tech_info = ["1", serial_number, RunInfo[-1], os.path.basename(RunInfo[-3]), "Yes" if SampleInfo[-4] != 0 else "No", "Yes" if SampleInfo[-3] != 0 else "No",\
-            "Continuous" if 0 else string, RunInfo[-4].split(" - ")[0], RunInfo[-4].split(" - ")[1]]
-            info = ["Software Version", "Instrument Serial Number", "Spectrometer Serial Number", "Method File", "External Sample", "Sodium Thiosulfate", \
-            "Sample Frequency", "Target Bacteria", "Incubation Temperature"]
-            pdf.report_section("Technical Info", 45, info, tech_info)
+        # Run Info
+        run_info = [str(RunInfo[1]), str(RunInfo[2]), str(RunInfo[3]) ]
+        info = ["Bottle Number", "Bottle Size", "Run Start Time"]
+        pdf.report_section("Run Details", 117, info, run_info)
 
-            # Run Info
-            run_info = [str(RunInfo[1]), str(RunInfo[2]), str(RunInfo[3]) ]
-            info = ["Bottle Number", "Bottle Size", "Run Start Time"]
-            pdf.report_section("Run Details", 102, info, run_info)
+        # Sample info
+        string_2 = f"{SampleInfo[1]}/{RunInfo[2]}"
+        sample_info = [string_2, str(SampleInfo[3][:-9]), str(SampleInfo[3][-8:]), fluo_wl, turb_wl]
+        info = ["Sample Number", "Date", "Sample Start Time", "Fluorescent Wavelength", "Turbidity Wavelength"]
+        pdf.report_section("Sample Details", 145, info, sample_info)
 
-            # Sample info
-            string_2 = f"{SampleInfo[1]}/{RunInfo[2]}"
-            sample_info = [string_2, str(SampleInfo[3][:-9]), str(SampleInfo[3][-8:]), fluo_wl, turb_wl]
-            info = ["Sample Number", "Date", "Sample Start Time", "Fluorescent Wavelength", "Turbidity Wavelength"]
-            pdf.report_section("Sample Details", 130, info, sample_info)
-
-            sample_id = db.fetch_data("SELECT id, sample_start_time FROM SampleInfo WHERE date = ?", date)
-            # Catch dates with multiple data instances, and prompt the user to select instance.
-            if len(sample_id) > 1:
-                items = [str(sid[1]) for sid in sample_id]
-                print(items)
-                item, ok_pressed = QInputDialog.getItem(self, "Multiple Samples", "Select the sample you want to plot:", items, 0, False)
-                if ok_pressed and item:
-                    index = items.index(item)
-                    print("index: ", index)
-                else:
-                    return
+        sample_id = db.fetch_data("SELECT id, sample_start_time FROM SampleInfo WHERE date = ?", date)
+        # Catch dates with multiple data instances, and prompt the user to select instance.
+        if len(sample_id) > 1:
+            items = [str(sid[1]) for sid in sample_id]
+            #print(items)
+            item, ok_pressed = QInputDialog.getItem(self, "Multiple Samples", "Select the sample you want to plot:", items, 0, False)
+            if ok_pressed and item:
+                index = items.index(item)
+                print("index: ", index)
             else:
-                index = 0
-
-            sample_id = sample_id[index][0]
-
-            # Data to plot Info
-            table_data = db.fetch_data("SELECT intensity, time_measured, readings_to_average_over, nm_bandwidth FROM SpectralData \
-                                WHERE sample_id IN(SELECT id FROM SampleInfo WHERE date = ? AND wavelength_id = ?)", date, fluo_wl)
-            # Plot and Table
-            data = self.fetch_data_from_single_sample(sample_id, int(fluo_wl))
-            if not data:
                 return
+        else:
+            index = 0
 
-            hours = [self.datetimestringler(stamp[1]) for stamp in table_data]
-            first_time = hours[0]
-            hours = [(date - first_time).total_seconds() / 3600 for date in hours]
-            print(hours)
+        sample_id = sample_id[index][0]
 
-            pdf.plot_section(data, table_data, hours)
+        # Data to plot Info
+        table_data = db.fetch_data("SELECT intensity, time_measured, readings_to_average_over, nm_bandwidth FROM SpectralData \
+                            WHERE sample_id IN(SELECT id FROM SampleInfo WHERE date = ? AND wavelength_id = ?)", date, fluo_wl)
+        # Plot and Table
+        data = self.fetch_data_from_single_sample(sample_id, int(fluo_wl))
+        if not data:
+            return
 
-            # Interpret the valence of the result and print to pdf
-            if SampleInfo[4] == 1:
-                result_f = "PRESSENT"
-            else:
-                result_f = "ABSENT"
+        hours = [self.datetimestringler(stamp[1]) for stamp in table_data]
+        first_time = hours[0]
+        hours = [(date - first_time).total_seconds() / 3600 for date in hours]
 
-            if SampleInfo[5] == 1:
-                result_t = "POSITIVE"
-            else:
-                result_t = "NEGATIVE"
-            pdf.result_section(RunInfo[10], result_f, result_t)
+        pdf.plot_section(data, table_data, hours)
 
-            # Create The right folder to store the report in
-            print("TEST DATE: ", str(SampleInfo[4]))
-            folder = self.create_year_month_folders(self.datetimestringler(str(SampleInfo[4])))
-            string_3 = f"{date}.pdf"
-            pdf_path = os.path.join(folder, string_3)
-            pdf.output(pdf_path)
-            print(pdf_path)
-            report_image = convert_from_path(pdf_path, dpi=150)
+        # Interpret the valence of the result and print to pdf
+        if SampleInfo[5] == 1:
+            result_f = "PRESSENT"
+        else:
+            result_f = "ABSENT"
 
-            # Check if images for this PDF already exist
-            pdf_base_name = os.path.basename(pdf_path).replace('.pdf', '')
-            image_name = f"{pdf_base_name}.png"
-            image_path = os.path.join(base_dir,"Reports", "report_images", image_name)
-            print(image_path)
-            report_image[0].save(image_path, "PNG")
+        if SampleInfo[6] == 1:
+            result_t = "POSITIVE"
+        else:
+            result_t = "NEGATIVE"
+        pdf.result_section(RunInfo[10], result_f, result_t)
 
-        except:
-            error = "Could not create Report from given date"
-            self.show_error_message(error)
+        # Create The right folder to store the report in
+        print("TEST DATE: ", str(SampleInfo[4]))
+        folder = self.create_year_month_folders(self.datetimestringler(str(SampleInfo[4])))
+        string_3 = f"{date}.pdf"
+        pdf_path = os.path.join(folder, string_3)
+        pdf.output(pdf_path)
+        print(pdf_path)
+        poppler_path = os.path.abspath(path)
+        print("\n\n\n\n", poppler_path, type(poppler_path))
+        report_image = convert_from_path(pdf_path, dpi=150, poppler_path=poppler_path)
+
+        # Check if images for this PDF already exist
+        pdf_base_name = os.path.basename(pdf_path).replace('.pdf', '')
+        image_name = f"{pdf_base_name}.png"
+        image_path = os.path.join(base_dir,"Reports", "report_images", image_name)
+        print(image_path)
+        report_image[0].save(image_path, "PNG")
+
+        # except:
+        #     error = "Could not create Report from given date"
+        #     self.show_error_message(error, False)
 
     # Create folder system in the stored result/report folder if is is not there already. 
     def create_year_month_folders(self, date):
@@ -1666,18 +1697,18 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     ## Option & Choices functions ##
     # Bottle Size changed funciton #
     def bottle_changer(self, accept):
-        if not self.startNewMethod.isChecked():
-            self.startNewMethod.setChecked(False)
+        if not self.ui.startNewMethod.isChecked():
+            self.ui.startNewMethod.setChecked(False)
             method_running = ErrorDialog("There is a method running, please stop the run before updating the bottle size")
             accept = method_running.exec_()
             if accept:
                 return
             
-        bottle_size = self.bottleSize.value()
+        bottle_size = self.ui.bottleSize.value()
         print("bot, samp, remain; ", bottle_size, settings.getSamplesNr(), settings.getRemaining())
         settings.storeSamplesNr(bottle_size)
         settings.storeBottleSize(bottle_size)
-        # self.dayScheduler.setValue(settings.getSamplesNr())
+        # self.ui.dayScheduler.setValue(settings.getSamplesNr())
         settings.storeRemaining(bottle_size)
         self.update_medium_progress_bar(True)
 
@@ -1691,43 +1722,43 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         # Warn the user if no bottle size is selected.
         if accept:
             self.update_medium_progress_bar(True) # superfluous?
-            self.bottleSizeWarning.hide()
-            self.leftSubContainer.hide()
-            self.moreOptions.hide()
+            self.ui.bottleSizeWarning.hide()
+            self.ui.leftSubContainer.hide()
+            self.ui.moreOptions.hide()
 
     # Update the GUI progressbar for bottle size and new flask(optional set to True)
     def update_medium_progress_bar(self, new_flask = False):
         try:
             bottle_size = settings.getBottleSize()
-            self.bottleSize.setValue(bottle_size)
+            self.ui.bottleSize.setValue(bottle_size)
             # Bottle size number medium progressBar
-            self.remainingSamples.setMaximum(bottle_size)
+            self.ui.remainingSamples.setMaximum(bottle_size)
             # Update the remaining samples, newflask or remainings of the bottle
             if new_flask:
                 remaining_samples = bottle_size
             else:
                 remaining_samples = settings.getRemaining()
             # Display the value in the progressBar 
-            self.remainingSamples.setProperty("value", remaining_samples)
+            self.ui.remainingSamples.setProperty("value", remaining_samples)
             # Not sure if this parameter(settings.getSamplesNr) is useful, but 
             # it is for an option where sample number of a run could be set 
             # regardless of the bottle size. But the same result is achievable 
             # by using the bottle size parameter.
             if settings.getBottleSize() != settings.getSamplesNr():
-                self.remainingSamples.setFormat("  {}/{}              n={}".format(remaining_samples, bottle_size, settings.getSamplesNr()))
+                self.ui.remainingSamples.setFormat("  {}/{}              n={}".format(remaining_samples, bottle_size, settings.getSamplesNr()))
             else:
-                self.remainingSamples.setFormat("  {}/{}".format(remaining_samples, bottle_size))
+                self.ui.remainingSamples.setFormat("  {}/{}".format(remaining_samples, bottle_size))
         except:
             return
 
     # Change Target bacteria for the analysis #
     def target_bact_changer(self):
-        selected_analysis = self.bact_box.currentText()
+        selected_analysis = self.ui.bact_box.currentText()
         settings.storeTargetBacteria(selected_analysis)
 
     # Sample frequency changer #
     def sample_frequency_changer(self):
-        sample_freq = self.freq_box.currentText()
+        sample_freq = self.ui.freq_box.currentText()
         delay = None
         if "Continuous" in sample_freq:
             delay = 0
@@ -1745,7 +1776,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                                                         value=3, 
                                                         min=3)
 
-            self.freq_box.setItemText(3, f"Custom interval ({delay})")
+            self.ui.freq_box.setItemText(3, f"Custom interval ({delay})")
 
         settings.storeFrequency(delay)
         print(settings.getFrequency())
@@ -1763,24 +1794,24 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     ## CHECKBOXES METHOD ##
     # Status of Sodium thiosulfate checkbox #
     def update_sodium_thio_status(self):
-        sodium_thio = self.sodiumThio.checkState()# == Qt.Checked
+        sodium_thio = self.ui.sodiumThio.checkState()# == Qt.Checked
         settings.storeSodiumThio(sodium_thio)
 
     # Status of External Sample checkbox  - mutually exclusive with dual sampling #
     def update_external_sample_status(self):
-        ext_samp = self.externalSample.checkState()# == Qt.Checked
+        ext_samp = self.ui.externalSample.checkState()# == Qt.Checked
         if ext_samp:
-            self.dualSamples.setChecked(0)
+            self.ui.dualSamples.setChecked(0)
             settings.storeDualSamples(0)
-            self.sampleSource.hide()
+            self.ui.sampleSource.hide()
 
         settings.storeExtSamp(ext_samp)
 
     # Status of Delay before start checkbox - mutually exclusive with remote start #
     def update_delay_start_time(self):
-        delay = self.delayStartTime.checkState()
+        delay = self.ui.delayStartTime.checkState()
         if delay:
-            self.remoteStart.setChecked(0)
+            self.ui.remoteStart.setChecked(0)
             settings.storeRemoteStart(0)
             try:
                 self.mobileRemoteToggle.stop()
@@ -1790,11 +1821,11 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
     # Status of Remote start checkbox - mutually exclusive with delay before start #
     def update_remote_start(self):
-        remote_start = self.remoteStart.checkState() # == Qt.Checked
+        remote_start = self.ui.remoteStart.checkState() # == Qt.Checked
         # Twice to remove the "awaiting remote start..." text from the status bar
         self.setStatus("")
         self.setStatus("")
-        text = self.startingTime.toPlainText()
+        text = self.ui.startingTime.toPlainText()
         print(text)
         if "Awaiting remote start" in text:
             text = text.replace("\n\nAwaiting remote start...", "")
@@ -1804,7 +1835,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         self.startTime(text)
         text.strip()
         if remote_start:
-            self.delayStartTime.setChecked(0)
+            self.ui.delayStartTime.setChecked(0)
             settings.storeDelayStart(0)
 
             # Check if adu is connected before starting GSM listner thread
@@ -1812,13 +1843,13 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 no_adu = ErrorDialog("The ADU is not connected, so remote signal is not accesible.")
                 accept = no_adu.exec_()
                 if accept:
-                    self.remoteStart.setChecked(0)
+                    self.ui.remoteStart.setChecked(0)
                     settings.storeRemoteStart(0)
                     return False
             # Start the remote GSM listner
             self.mobileRemoteToggle.start()
             self.setStatus("Awaiting remote start...")
-            current_text = self.startingTime.toPlainText()
+            current_text = self.ui.startingTime.toPlainText()
             self.startTime(f"{current_text}\n\nAwaiting remote start...")
 
         else:
@@ -1831,14 +1862,14 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
     # Status of dual sample checkbox - mutually exclusive with External Sample #
     def update_dual_samples(self):
-        dual_samp = self.dualSamples.checkState()
+        dual_samp = self.ui.dualSamples.checkState()
         if settings.getSampleSource() == None:
             # Switch in method file lead to start at sample1 - first run
             settings.storeSampleSource(5)
         if dual_samp:
-            self.externalSample.setChecked(0)
+            self.ui.externalSample.setChecked(0)
             settings.storeExtSamp(0)
-            self.sampleSource.show()
+            self.ui.sampleSource.show()
             # Get the last ran sample
             source = settings.getSampleSource()
             # As this is designed to alternate in method file the source 
@@ -1849,23 +1880,26 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 next_source = "sample 1"
 
             string = f"Next source: {next_source}"
-            self.sampleSource.setText(string)
+            self.ui.sampleSource.setText(string)
         else:
-            self.sampleSource.hide()
+            self.ui.sampleSource.hide()
         settings.storeDualSamples(dual_samp)
 
 
     # Toggle all/interval-of-7 samples in a row.
     def update_bottle_size_manual_option(self):
-        settings.storeBottleSizeStep(self.otherValues.checkState())
-        if self.otherValues.checkState():
-            self.bottleSize.setSingleStep(1)
+        settings.storeBottleSizeStep(self.ui.otherValues.checkState())
+        if self.ui.otherValues.checkState():
+            self.ui.bottleSize.setSingleStep(1)
         else:
-            self.bottleSize.setSingleStep(7)
-            current_value = self.bottleSize.value()
+            self.ui.bottleSize.setSingleStep(7)
+            current_value = self.ui.bottleSize.value()
             closest_divisible_by_7 = round(current_value / 7) * 7
-            self.bottleSize.setValue(closest_divisible_by_7)
+            self.ui.bottleSize.setValue(closest_divisible_by_7)
 
+    # Store the checkbox variable of auto generating reports
+    def update_auto_report(self):
+        settings.storeAutoReport(self.ui.reportFile.checkState())
 
     # Check for samples left in the media bottle
     def check_medium_status(self):
@@ -1887,7 +1921,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             return 1
         else:
             print("medium check returns false")
-            self.startNewMethod.setChecked(True)
+            self.ui.startNewMethod.setChecked(True)
             return 0
 
     # Update the hide options for checkboxes - which is to be shown in user mode
@@ -1904,26 +1938,30 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     # Update the medium level - samples left
     def progBar_clicked(self):
         # You cant update progress bar as long as a method is running - it might mess up variable values used by the program
-        if self.startNewMethod.isChecked():
+        if not self.ui.startNewMethod.isChecked():
+            print("method is running already - return")
             return
+        print("method is not running and here comes the message:")
         accept = self.show_error_message("Have you inserted a new media bottle?")
         if accept:
+            print("The message was accepted")
             self.update_medium_progress_bar(True)
 
     # Function to open the custom error message window
-    def show_error_message(self, error_message):
+    def show_error_message(self, error_message, stop_method=True):
         dialog = ErrorDialog(error_message)
         accepted = dialog.exec_()
         if accepted == QDialog.Accepted:
-            #accepted = True
-            print("stopping method")
-            # Ensure the stopping of the run in case it is started
-            self.startNewMethod.setChecked(True)
-            # self.call_start = False
-            # Update start/stop button
-            self.stop_updater()
-
-
+            if stop_method == True:
+                #accepted = True
+                print("stopping method")
+                # Ensure the stopping of the run in case it is started
+                self.ui.startNewMethod.setChecked(True)
+                # self.call_start = False
+                # Update start/stop button
+                self.stop_updater()
+            else:
+                return
         else:
             print("rejected dialog")
             pass
@@ -1935,7 +1973,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     def method_file_changer(self, index):
         global method_files_path
         # Access the selected text
-        file = self.methodSelector.currentText()
+        file = self.ui.methodSelector.currentText()
         # Make sure it is the full path to the file
         if not os.path.isabs(file):
             file_path = os.path.join(method_files_path, file)
@@ -1950,13 +1988,13 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 print("Browsed file: ", file_path)
                 # Add the path browsed if it is not already part of the selector
                 path_in_selector = False
-                for index in range(self.methodSelector.count()):
-                    if file_path == self.methodSelector.itemText(index) and os.path.isFile(file_path):
+                for index in range(self.ui.methodSelector.count()):
+                    if file_path == self.ui.methodSelector.itemText(index) and os.path.isFile(file_path):
                         path_in_selector = True
                 if not path_in_selector:
-                    self.methodSelector.addItem(file_path)
+                    self.ui.methodSelector.addItem(file_path)
                 # Set the browsed file as the selected file of the selector
-                self.methodSelector.setCurrentText(file_path)
+                self.ui.methodSelector.setCurrentText(file_path)
             else:
                 print("choose a valid file")
                 return
@@ -1986,31 +2024,31 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
     def methodDropDown(self):
         global method_files_path
         # Clear existing items
-        self.methodSelector.clear()
+        self.ui.methodSelector.clear()
 
         if os.path.exists(method_files_path):
 
             # Add files from the folder to the dropdown
             for file in os.listdir(method_files_path):
                 if file.endswith(".CFAST"):
-                    self.methodSelector.addItem(file)
+                    self.ui.methodSelector.addItem(file)
             # Fetch stored method
             method = settings.getMethod()
             # Add to dropdown list, the stored method, if it is not in the Method folder
             path_in_selector = False
-            for index in range(self.methodSelector.count()):
-                if os.path.basename(method) == os.path.basename(self.methodSelector.itemText(index)):
+            for index in range(self.ui.methodSelector.count()):
+                if os.path.basename(method) == os.path.basename(self.ui.methodSelector.itemText(index)):
                     path_in_selector = True
 
             if not path_in_selector:
-                self.methodSelector.addItem(method)
-                self.methodSelector.setCurrentText(method)
+                self.ui.methodSelector.addItem(method)
+                self.ui.methodSelector.setCurrentText(method)
 
             elif method:
-                self.methodSelector.setCurrentText(os.path.basename(method))
+                self.ui.methodSelector.setCurrentText(os.path.basename(method))
         
         # Add the 'Browse' option
-        self.methodSelector.addItem("Browse...")
+        self.ui.methodSelector.addItem("Browse...")
 
     ## CALLING ALL THE ADVANCED MENU CLASSES INTO THE MAIN GUI ##
     # Advanced Settings #
@@ -2040,23 +2078,23 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             if accept:
                 try:
                     # Trigger back button click to remove the advanced screen displayed
-                    self.backBtn.click()
+                    self.ui.backBtn.click()
                     # remove advanced menu bar
-                    self.advancedMenu.hide()
-                    self.hideCheckBox.hide()
+                    self.ui.advancedMenu.hide()
+                    self.ui.hideCheckBox.hide()
                     self.checkbox_hiding()
                     # # Hide schedualer menu
-                    # self.shedualerMenu.hide()
+                    # self.ui.shedualerMenu.hide()
                     # Remove all pages from the stacked widget starting from index 1
                     try:
                         index = 1
-                        while index < self.stackedWidget.count():
-                            page = self.stackedWidget.widget(index)
+                        while index < self.ui.stackedWidget.count():
+                            page = self.ui.stackedWidget.widget(index)
                             if page:
-                                self.stackedWidget.removeWidget(page)
+                                self.ui.stackedWidget.removeWidget(page)
                                 page.deleteLater()  # Delete the page
                             else:
-                                index += 1            # self.advancedMenu.hide()
+                                index += 1            # self.ui.advancedMenu.hide()
                     except:
                         print("could not remove stacked pages")
                     # Delete the window class instances
@@ -2077,8 +2115,8 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             if self.login.exec() == QDialog.Accepted:
                 print("accepted")
                 # Show advanced features in menu
-                self.advancedMenu.show()
-                self.hideCheckBox.show()
+                self.ui.advancedMenu.show()
+                self.ui.hideCheckBox.show()
                 # Show all the checkboxes when in advanced mode
                 for box in self.checkBoxes_options:
                     box.show()
@@ -2088,7 +2126,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
             # regardless of the bottle size. But the same result is achievable 
             # by using the bottle size parameter, so I have commented it out for now.
                 # Show schedualer menu
-                # self.shedualerMenu.show()
+                # self.ui.shedualerMenu.show()
 
                 # ADU
                 # Create an instance of the class
@@ -2097,7 +2135,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 self.adu_docker = QDockWidget("ADU", self)
                 self.adu_docker.setWidget(self.aduWindow)
                 # Add the docker to the stacked widget
-                self.stackedWidget.addWidget(self.aduWindow)
+                self.ui.stackedWidget.addWidget(self.aduWindow)
 
                 # SFM
                 # Create an instance of the class
@@ -2106,7 +2144,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 self.sfm_docker = QDockWidget("SFM", self)
                 self.sfm_docker.setWidget(self.sfmWindow)
                 # Add the docker to the stacked widgetf
-                self.stackedWidget.addWidget(self.sfmWindow)
+                self.ui.stackedWidget.addWidget(self.sfmWindow)
 
                 # Liquid Handling
                 # Create an instance of the class
@@ -2115,7 +2153,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 self.LqH_docker = QDockWidget("Liquid Handling", self)
                 self.LqH_docker.setWidget(self.LqHWindow)
                 # Add the docker to the stacked widget
-                self.stackedWidget.addWidget(self.LqHWindow)
+                self.ui.stackedWidget.addWidget(self.LqHWindow)
                 # self.stackedWidget.addWidget(sfmWindow)
 
                 # Editor
@@ -2164,11 +2202,11 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 self.editor_docker.setFeatures(QDockWidget.NoDockWidgetFeatures)  # Disable moving and closing
                 self.editor_docker.setWidget(self.Editor)
                 # self.editor_docker.setStyleSheet("background-color: #92C5DE;")
-                self.stackedWidget.addWidget(self.editor_docker)
+                self.ui.stackedWidget.addWidget(self.editor_docker)
 
                 # Open ADU window first
-                self.aduBtn.click()
-                self.stackedWidget.setCurrentIndex(1)
+                self.ui.aduBtn.click()
+                self.ui.stackedWidget.setCurrentIndex(1)
                 # Set teh button color
             else:
                 print("REJECTED")
@@ -2214,7 +2252,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         for message in self.status_queue:
             new_text = new_text + message + "\n\n"
         # Set updated text back to the QTextBrowser
-        self.status_browser.setText(new_text)
+        self.ui.status_browser.setText(new_text)
 
     ## Handle warnings from worker thread.
     def warning_message(self, message):
@@ -2228,20 +2266,20 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
     # set text in startTime field
     def startTime(self, txt):
-        self.startingTime.setText(txt)
+        self.ui.startingTime.setText(txt)
 
     # set text in lastBactAlarm field
     def bactAlarm(self, txt):
         string = txt.split(",")
         timeing = string[0]
         ttd = string[1]
-        self.lastBactAlarm.setText(timeing)
+        self.ui.lastBactAlarm.setText(timeing)
         db = DatabaseHandler()
         db.execute_query("UPDATE SampleInfo SET bact_pos = 1, time_to_detect= ? WHERE id = ?", ttd, self.sample_id)
 
     # set text in lastTurbAlarm field
     def turbAlarm(self, txt):
-        self.lastTurbAlarm.setText(txt)
+        self.ui.lastTurbAlarm.setText(txt)
         db = DatabaseHandler()
         db.execute_query("UPDATE SampleInfo SET turb_pos = 1 WHERE id = ?", self.sample_id)
 
@@ -2305,7 +2343,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         
         # Catch the instance of no data from a sample
         if not rows:
-            self.show_error_message("There seem to be no readings from that sample")
+            self.show_error_message("There seem to be no readings from that sample", False)
             return False
 
         # Extract time_measured and convert it to datetime object and intensity
@@ -2334,11 +2372,11 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
         close_button.clicked.connect(lambda: self.close_tab(page))
 
         # Get the index of the added tab
-        index = self.tabWidget.addTab(page, tab_name)
+        index = self.ui.tabWidget.addTab(page, tab_name)
 
         # Set the close button for the tab and go to the new tab
-        self.tabWidget.tabBar().setTabButton(index, QTabBar.RightSide, close_button)
-        self.tabWidget.setCurrentIndex(index)
+        self.ui.tabWidget.tabBar().setTabButton(index, QTabBar.RightSide, close_button)
+        self.ui.tabWidget.setCurrentIndex(index)
 
         # Create the plot widget
         graphWidget = CustomPlot(self)
@@ -2350,21 +2388,21 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
     # Close function for closing the tabs (plot)
     def close_tab(self, tab_page):
-        index = self.tabWidget.indexOf(tab_page)
+        index = self.ui.tabWidget.indexOf(tab_page)
         print("Page has index: ", index)
         if index != -1:
-            self.tabWidget.removeTab(index)
+            self.ui.tabWidget.removeTab(index)
             return True
         else:
             print("such Tab-index dont exist")
             return False
     # Close tab from name, function to avoid two tabs with same name and content
     def close_tab_by_name(self, name):
-        tab_count = self.tabWidget.count()
+        tab_count = self.ui.tabWidget.count()
         for index in range(tab_count):
-            tab_text = self.tabWidget.tabText(index)
+            tab_text = self.ui.tabWidget.tabText(index)
             if tab_text == name:
-                self.tabWidget.removeTab(index)
+                self.ui.tabWidget.removeTab(index)
 
 
     # Function that plots data (x as datetime, y as values) to the given widget (graph_widget)
@@ -2417,7 +2455,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
                 graph_widget.setLabel("left", text="Fluorescent intensity")
                 threshold = float(baseline) * float(settings.getThresholdFluo())
                 
-                if n_samples > 1 and self.show_specific_baseline.isChecked():
+                if n_samples > 1 and self.ui.show_specific_baseline.isChecked():
                     # Create a step threshold line based on the threshold for each sample
                     self.threshold_staircase_line(threshold, graph_widget, x_start, x_end)
                     plot_mean_threshold = False
@@ -2477,7 +2515,7 @@ Turbidity raw 5 value:\t\t\t{settings.getCalTurb5()}\nTurbidity raw 10 value:\t\
 
 
         # Switch to the plot tab to display the graph, if other menus are chosen
-        self.backBtn.click()
+        self.ui.backBtn.click()
 
 
     # Get threshold values for plot
@@ -2550,7 +2588,7 @@ class PDFReport(FPDF):
 
         indentation = 1 # Indent relative to the header
         for i, elem in enumerate(var_name_list):
-            print(i)
+            # print(i)
             self.cell(indentation, 5, '', 0, 0)
             self.cell(10, 5, elem + ":", 0, 0)
             self.cell(80, 5, var_list[i], 0, 1, 'R')
@@ -2559,7 +2597,9 @@ class PDFReport(FPDF):
     # Function to create table in report 
     def table_section(self, pos, data, timing):
         indentation = 4
-        self.set_y(pos)
+        print("len data: ", len(data)+1)
+        table_height = (len(data)+1) * 6 + 20
+        self.set_y(pos-table_height)
         # Right side of the repport
         self.set_x((self.w/2)+indentation)
         # Print the header row
@@ -2599,18 +2639,19 @@ class PDFReport(FPDF):
         self.set_font_size(12)
         self.set_y(self.h-110)
         self.cell(0, 5, "Growth Curve", 0, 1)
-        self.draw_line()
+        self.draw_line(102)
 
         # Limit and threshold values
         alarm_threshold = float(settings.getThresholdFluo()) * float(data[1][0])
+        print("ALARM THRESH: ", alarm_threshold)
         maximum = max(data[1])
         top = maximum * 1.1 if maximum > 30000 else 30000
         x_min = data[0][0]
         x_max = data[0][-1]
         timing = [round(x, 2) for x in timing]
         x_time = [x for x in data[0]]
-        print("timing:\t", timing)
         # Generate plot
+        plt.clf()
         plt.plot(x_time, data[1], '-^')
         plt.axhspan(alarm_threshold, top, color='red', alpha=0.8)
         plt.xlim(x_min, x_max)
@@ -2624,33 +2665,38 @@ class PDFReport(FPDF):
         plt.savefig(plot_path, format='png')
         # Clear the plot to prevent it from being displayed
         # plt.clf()
+        # time.sleep(10)
+
         # Print the image file to the PDF
         self.image(plot_path, x=10, y=(self.h-103), w=100, h=75)
         # Delete plot image
         os.remove(plot_path)
         # Make table with data
-        self.table_section(200, table_data, timing)
+        self.table_section(self.h, table_data, timing)
         # except:
         #     return
     # Function to create result section
     def result_section(self, type, result_fluo, result_turb):
         self.set_fill_color(211, 211, 211)
         self.set_font('Arial', '', 12)
-        self.set_y(170)
+        self.set_y(42)
         self.set_x(11)
         right_margin = self.w - 21
-        self.cell(right_margin, 5, "Analysis Results", 0, 1, fill=True)
+        self.cell(right_margin, 11, "", 0, 1, fill=True)
+        self.set_y(43)
+        self.cell(right_margin + 3, 5, "Analysis Results", 0, 1, fill=False)
         # Fluorescense results
+        self.set_y(48)
         typ = type + ":"
         self.set_font('Arial', '', 10)
         self.set_x(11)
-        self.cell(40, 5, typ, 0, 0, fill=True)
-        self.cell(35, 5, result_fluo, 0, 0, 'R', fill=True)
+        self.cell(40, 5, typ, 0, 0, fill=False)
+        self.cell(29, 5, result_fluo, 0, 0, 'R', fill=False)
         # Turb results
-        self.cell(29, 5, "", 0, 0, fill=True)
+        self.cell(30, 5, "", 0, 0, fill=False)
         string = f"Turbidity ALARM ({settings.getThresholdTurb()} NTU):"
-        self.cell(55, 5, string, 0, 0, fill=True)
-        self.cell(30, 5, result_turb, 0, 1, 'R', fill=True)
+        self.cell(55, 5, string, 0, 0, fill=False)
+        self.cell(30, 5, result_turb, 0, 1, 'R', fill=False)
     
     # Function to draw line between sections
     def draw_line(self, width=None):
@@ -3230,6 +3276,7 @@ class ErrorDialog(QDialog):
     # Update bottle statusof GUI
     def new_bottle(self):
         settings.storeRemaining(settings.getBottleSize())
+        settings.storeSamplesNr(settings.getBottleSize())
         self.accept()
     # Store the dialog input of sodium thiosulfate and external sample
     def register_selections(self):
@@ -4388,10 +4435,25 @@ class ColorPicker(QWidget):
         return color.hue(), color.saturation(), color.value()
 
 
+
+
 if __name__ == '__main__':
+    # Ensure only one instance using a system-wide lock
+    semaphore = QSystemSemaphore(MEMORY_KEY, 1)
+    shared_memory = QSharedMemory(MEMORY_KEY)
+
+    if shared_memory.attach():  # Another instance is already running
+        print("An instance is already running. Exiting.")
+        sys.exit(0)
+
+    shared_memory.create(1)  # Reserve memory to mark this instance
+
     app = QApplication(sys.argv)
     main_window = Colifast_ALARM()
     main_window.show()
-    app.exec_()
+    
+    exit_code = app.exec_()
 
-
+    # Cleanup shared memory when exiting
+    shared_memory.detach()
+    sys.exit(exit_code)

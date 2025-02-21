@@ -12,6 +12,10 @@ a = Analysis(
     pathex=[],  # Set pathex if needed for module searching
     binaries=[
         (os.path.join(path_to_libraries, 'python.exe'), '.'),  # Python binary
+        (os.path.join(path_to_program, 'AduHid.dll'), '.'),
+        (os.path.join(path_to_program, 'AduHid64.dll'), '.'),
+        (os.path.join(path_to_program, 'PumpCommServer.dll'), '.'),
+        (os.path.join(path_to_libraries, 'Library', 'bin'), '.'),
     ],
     datas=[
         (os.path.join(path_to_program, 'python_designer_files'), 'python_designer_files'),
@@ -21,14 +25,12 @@ a = Analysis(
         (os.path.join(path_to_program, 'styles'), 'styles'),
         (os.path.join(path_to_program, '__init__.py'), '.'),
         (os.path.join(path_to_program, 'method_helper.py'), '.'),
-        (os.path.join(path_to_program, 'PumpCommServer.dll'), '.'),
         (os.path.join(path_to_program, 'settings.py'), '.'),
         (os.path.join(path_to_program, 'resource_path.py'), '.'),
         (os.path.join(path_to_program, 'Icons_rc.py'), '.'),
         (os.path.join(path_to_program, 'Colifast_ALARM_manager.py'), '.'),
         (os.path.join(path_to_libraries, 'Lib', 'site-packages', 'seabreeze'), 'seabreeze'),
-        (os.path.join(path_to_program, 'AduHid64.dll'), '.'),
-        (os.path.join(path_to_program, 'AduHid.dll'), '.'),
+        (os.path.join(path_to_libraries, 'Lib', 'site-packages', 'pdf2image'), 'pdf2image'),
         (os.path.join(path_to_program, 'run_seabreeze_setup.bat'), '.'),
         (os.path.join(path_to_program, 'docs\manual.html'), 'docs'),
         (os.path.join(sys.exec_prefix, 'Lib'), 'Lib'),
@@ -36,11 +38,11 @@ a = Analysis(
         # Include any additional directories or files necessary
     ],
     hiddenimports=[
-        'serial', 'seabreeze', 'seabreeze.spectrometers',
+        'serial', 'seabreeze', 'seabreeze.spectrometers', 'pdf2image.pdf2image',
         'seabreeze.os_setup', 'PyQt5.Qsci', 'PyQt5', 'Colifast_ALARM_manager', 
         'Colifast_ALARM_manager.TimeSelectorDialog', 'Colifast_ALARM_manager.PDFReport',
         'Colifast_ALARM_manager.LogIn', 'Colifast_ALARM_manager.SFMadv',
-        'Colifast_ALARM_manager.LiquidHandling','Colifast_ALARM_manager.AD', 
+        'Colifast_ALARM_manager.LiquidHandling','Colifast_ALARM_manager.AD',
 
     ],
     hookspath=[],
@@ -64,7 +66,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,  # Set to False for a GUI application
+    console=True,  # Set to False for a GUI application without debugging window
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
